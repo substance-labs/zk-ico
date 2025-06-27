@@ -5,6 +5,7 @@ export interface Token {
 }
 
 export interface Campaign {
+  address: string
   title: string
   description: string
   aztecBuyToken?: Token

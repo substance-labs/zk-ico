@@ -54,6 +54,11 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
           <Label className="text-sm mb-1 block">Buy Token</Label>
           <Input value="ETH" disabled />
         </div>
+
+        <div>
+          <Label className="text-sm mb-1 block">Rate (1 ETH = ? Buy Token)</Label>
+          <Input placeholder="" />
+        </div>
       </div>
 
       <div className="mt-6">

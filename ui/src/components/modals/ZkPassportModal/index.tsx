@@ -1,13 +1,12 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
 import QRCode from "react-qr-code"
 
 import Spinner from "../../base/Spinner"
-import Modal, { type ModalProps } from "../Modal"
+import Modal from "../Modal"
 
-interface ZkPassportModalProps extends ModalProps {
+interface ZkPassportModalProps {
   isGeneratingProof: boolean
   url: string
+  onClose: React.MouseEventHandler<HTMLButtonElement>
 }
 
 const ZkPassportModal: React.FC<ZkPassportModalProps> = ({ isGeneratingProof, url, onClose }) => {

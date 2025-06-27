@@ -7,6 +7,7 @@ import MainLayout from "../../layouts/MainLayout"
 import CreateCampaignModal from "../../modals/CreateCampaignModal"
 import SecondaryButton from "../../base/SecondaryButton"
 import Button from "../../base/Button"
+import ZkPassportModal from "../../modals/ZkPassportModal"
 
 import type { Campaign } from "../../../types"
 
@@ -48,7 +49,8 @@ export const CampaignCard = ({
 
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
-  const { campaigns } = useCampaigns()
+  const { campaigns, participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
+    useCampaigns()
 
   return (
     <MainLayout>
@@ -61,15 +63,16 @@ const Campaigns = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
           {campaigns.map((campaign, idx) => (
-            <CampaignCard
-              key={idx}
-              campaign={campaign}
-              onParticipate={() => console.log(`Participated in ${campaign.title}`)}
-            />
+            <CampaignCard key={idx} campaign={campaign} onParticipate={() => participate(campaign)} />
           ))}
         </section>
       </div>
 
+      <ZkPassportModal
+        url={zkPassportCurrentUrl}
+        onClose={resetZkPassportProof}
+        isGeneratingProof={isGeneratingZkPassportProof}
+      />
       <CreateCampaignModal visible={createCampaignModalVisible} onClose={() => setCreateCampaignModalVisible(false)} />
     </MainLayout>
   )
