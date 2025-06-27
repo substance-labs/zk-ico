@@ -4,13 +4,14 @@ pragma solidity ^0.8.28;
 import {OrderEncoder, OrderData} from "./libs/OrderEncoder.sol";
 import {StringUtils} from "./libs/StringUtils.sol";
 import {IHook7683Recipient} from "./interfaces/IHook7683Recipient.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfaces/IZKPassportVerifier.sol";
 import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 
 contract ZkIco is IHook7683Recipient {
     address public immutable GATEWAY;
     address public immutable BUY_TOKEN;
+    bytes32 public immutable AZTEC_BUY_TOKEN;
     address public immutable ICO_TOKEN;
     address public immutable VERIFIER;
     uint256 public immutable RATE;
@@ -26,6 +27,7 @@ contract ZkIco is IHook7683Recipient {
 
     constructor(
         address gateway,
+        bytes32 aztecBuyToken,
         address buyToken,
         address icoToken,
         address verifier,
@@ -34,6 +36,7 @@ contract ZkIco is IHook7683Recipient {
         string memory description
     ) {
         GATEWAY = gateway;
+        AZTEC_BUY_TOKEN = aztecBuyToken;
         BUY_TOKEN = buyToken;
         ICO_TOKEN = icoToken;
         VERIFIER = verifier;
@@ -85,15 +88,42 @@ contract ZkIco is IHook7683Recipient {
         uint256 amount = finalizableDeposits[depositCommitment];
         require(amount > 0, "deposit not finalizable");
 
-        IERC20(ICO_TOKEN).transfer(owner, amount);
+        IERC20Metadata(ICO_TOKEN).transfer(owner, amount);
     }
 
-    function getDetails() external view returns (string memory, string memory, address, address, uint256) {
-        return (TITLE, DESCRIPTION, BUY_TOKEN, ICO_TOKEN, RATE);
+    function getDetails()
+        external
+        view
+        returns (
+            string memory,
+            string memory,
+            bytes32,
+            address,
+            string memory,
+            string memory,
+            address,
+            string memory,
+            string memory,
+            uint256
+        )
+    {
+        return (
+            TITLE,
+            DESCRIPTION,
+            AZTEC_BUY_TOKEN,
+            BUY_TOKEN,
+            IERC20Metadata(BUY_TOKEN).name(),
+            IERC20Metadata(BUY_TOKEN).symbol(),
+            ICO_TOKEN,
+            IERC20Metadata(ICO_TOKEN).name(),
+            IERC20Metadata(ICO_TOKEN).symbol(),
+            RATE
+        );
     }
 
     function onFilledOrder(OrderData calldata orderData) external {
         require(msg.sender == GATEWAY, "not gateway");
+        require(orderData.inputToken == AZTEC_BUY_TOKEN, "invalid aztec buy token");
         require(_bytes32ToAddress(orderData.outputToken) == BUY_TOKEN, "invalid buy token");
 
         bytes32 depositCommitment = orderData.data; // keccak256(abi.encodePacked(proofParams));
