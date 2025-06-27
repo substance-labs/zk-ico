@@ -1,6 +1,9 @@
+import React from "react"
+
+import MainLayout from "../../layouts/MainLayout"
 
 const Campaigns = () => {
-    return <div>campagins</div>
+    return <MainLayout />
 }
 
 export default Campaigns

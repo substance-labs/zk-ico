@@ -1,6 +1,10 @@
 import { useCallback, useState } from "react"
+
 import { getZkPassportProof } from "../../../utils/zkpassport"
+
 import ZkPassportModal from "../../modals/ZkPassportModal"
+import MainLayout from "../../layouts/MainLayout"
+import Button from "../../base/Button"
 
 const Home = () => {
   // EXAMPLE
@@ -36,19 +40,12 @@ const Home = () => {
   }, [])
 
   return (
-    <>
+    <MainLayout>
       <div>
-        Home
-        <br />
-        <button
-          className="pt-1 pb-1 pl-2 pr-2 bg-gray-100 rounded-3xl text-md hover:bg-gray-200 text-gray-600 font-medium cursor-pointer"
-          onClick={onGenerateProof}
-        >
-          generate zk passport proof
-        </button>
+        <Button onClick={onGenerateProof}>generate zk passport proof</Button>
       </div>
       <ZkPassportModal url={url} isGeneratingProof={isGeneratingProof} onClose={() => setUrl(null)} />
-    </>
+    </MainLayout>
   )
 }
 

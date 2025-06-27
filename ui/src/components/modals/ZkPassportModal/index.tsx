@@ -48,7 +48,7 @@ const ZkPassportModal = ({
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 underline font-semibold"
+                    className="text-purple-500 underline font-semibold"
                   >
                     here
                   </a>{" "}
