@@ -10,16 +10,16 @@ export default function Button({ children, disabled = false, className = "", ...
       {...props}
       disabled={disabled}
       className={`
+        ${className}
         inline-flex items-center justify-center
         bg-purple-500
         hover:bg-purple-600
         active:bg-purple-700
         text-white font-semibold
-        py-3 px-5 rounded-full
+        rounded-xl
         transition ease-in-out duration-150
         disabled:opacity-50 disabled:cursor-not-allowed
         cursor-pointer
-        ${className}
       `}
     >
       {children}

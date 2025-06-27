@@ -2,6 +2,7 @@ import { Home, BarChart3, X } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
 
 import { useAppStore } from "../../../store"
+import SecondaryButton from "../../base/SecondaryButton"
 
 const selectSidebarOpen = (state) => state.sidebarOpen
 const selectCloseSidebar = (state) => state.closeSidebar
@@ -32,6 +33,7 @@ const Sidebar = () => {
           backdrop-blur-md
           px-4 py-6 flex flex-col
           transform transition-transform duration-300 ease-in-out
+          shadow-sm
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
         `}
       >
@@ -58,35 +60,22 @@ const Sidebar = () => {
             ].map(({ to, icon: Icon, label }) => {
               const isActive = pathname === to
               return (
-                <button
+                <SecondaryButton
                   key={to}
                   onClick={() => {
                     navigate(to)
                     closeSidebar()
                   }}
-                  className={`
-                    group flex items-center space-x-3 py-2
-                    rounded-xl
-                    ${isActive ? "bg-purple-100" : "hover:bg-purple-50"}
-                    transition-colors duration-150
-                    cursor-pointer
-                  `}
+                  Icon={Icon}
+                  withBackground={isActive}
                 >
-                  <Icon
-                    className={`
-                      w-5 h-5
-                      text-gray-600
-                      transition-colors duration-150
-                      ml-3
-                    `}
-                  />
                   <span
-                    className={`text-sm font-medium text-gray-600
+                    className={`text-sm text-gray-600
                   `}
                   >
                     {label}
                   </span>
-                </button>
+                </SecondaryButton>
               )
             })}
           </nav>
