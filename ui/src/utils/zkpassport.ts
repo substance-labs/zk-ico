@@ -20,9 +20,9 @@ export const getZkPassportProof = async ({
   const zkPassport = new ZKPassport()
 
   const queryBuilder = await zkPassport.request({
-    name: "Aztec EVM bridge",
+    name: "Zk ICO",
     logo: "https://zkpassport.id/logo.png",
-    purpose: "You must be at least 18 years old",
+    purpose: "You must be at least 18 years old and not coming from North Korea",
     scope,
     devMode: true,
     mode: "compressed-evm",
@@ -30,6 +30,7 @@ export const getZkPassportProof = async ({
 
   const { url, onRequestReceived, onGeneratingProof, onProofGenerated, onResult, onReject } = queryBuilder.done()
 
+  //queryBuilder.in("nationality", "North Korea")
   queryBuilder.gte("age", 18)
   queryBuilder.done()
   onUrl(url)

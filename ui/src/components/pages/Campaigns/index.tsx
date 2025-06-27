@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 
-import { useCampaigns } from "../../../hooks/use-campaigns"
+import { useCampaigns, useParticipateToCampaign } from "../../../hooks/use-campaigns"
 
 import MainLayout from "../../layouts/MainLayout"
 import CreateCampaignModal from "../../modals/CreateCampaignModal"
@@ -49,8 +49,9 @@ export const CampaignCard = ({
 
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
-  const { campaigns, participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
-    useCampaigns()
+  const { campaigns } = useCampaigns()
+  const { participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
+    useParticipateToCampaign()
 
   return (
     <MainLayout>

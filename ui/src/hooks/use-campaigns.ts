@@ -6,15 +6,12 @@ import BigNumber from "bignumber.js"
 
 import { useAppStore } from "../store.js"
 import zkIcoAbi from "../utils/abi/zkico.json"
-import type { Campaign } from "../types.js"
+import type { Campaign, CreateCampaign } from "../types.js"
 import { getZkPassportProof } from "../utils/zkpassport.js"
 
 const TOPIC = "0x531026765026b9af1528359f0fb0ffd560e49666995880799502227196c5d897"
 
 export const useCampaigns = () => {
-  const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
-  const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
-
   const { campaigns, setCampaigns } = useAppStore()
 
   const fetchCampaigns = useCallback(async () => {
@@ -87,6 +84,15 @@ export const useCampaigns = () => {
     fetchCampaigns()
   }, [])
 
+  return {
+    campaigns,
+  }
+}
+
+export const useParticipateToCampaign = () => {
+  const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
+  const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
+
   const participate = useCallback(async (campaign: Campaign) => {
     try {
       const [proofParams] = await getZkPassportProof({
@@ -114,10 +120,23 @@ export const useCampaigns = () => {
   }, [])
 
   return {
-    campaigns,
+    participate,
     isGeneratingZkPassportProof,
     resetZkPassportProof: () => setCurrentZkPassportUrl(null),
-    participate,
     zkPassportCurrentUrl,
+  }
+}
+
+export const useCreateCampaign = () => {
+  const create = useCallback(async (params: CreateCampaign) => {
+    try {
+      // TODO integrate here
+    } catch (err) {
+      console.error(err)
+    }
+  }, [])
+
+  return {
+    create,
   }
 }

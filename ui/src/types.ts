@@ -13,3 +13,17 @@ export interface Campaign {
   icoToken: Token
   rate: string
 }
+
+export interface CreateCampaign {
+  gateway: string
+  verifier: string
+  aztecBuyTokenAddress: string
+  buyTokenAddress: string
+  icoToken: {
+    name: string
+    symbol: string
+  }
+  title: string
+  description: string
+  rate: string
+}
