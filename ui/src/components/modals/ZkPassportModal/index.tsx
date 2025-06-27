@@ -4,7 +4,15 @@ import QRCode from "react-qr-code"
 
 import Spinner from "../../base/Spinner"
 
-const ZkPassportModal = ({ url, isGeneratingProof, onClose }) => {
+const ZkPassportModal = ({
+  isGeneratingProof,
+  onClose,
+  url,
+}: {
+  isGeneratingProof: boolean
+  url: string
+  onClose: React.MouseEventHandler<HTMLButtonElement>
+}) => {
   return (
     <AnimatePresence>
       {url && (
