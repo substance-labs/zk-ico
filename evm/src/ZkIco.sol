@@ -88,6 +88,10 @@ contract ZkIco is IHook7683Recipient {
         IERC20(ICO_TOKEN).transfer(owner, amount);
     }
 
+    function getDetails() external view returns (string memory, string memory, address, address, uint256) {
+        return (TITLE, DESCRIPTION, BUY_TOKEN, ICO_TOKEN, RATE);
+    }
+
     function onFilledOrder(OrderData calldata orderData) external {
         require(msg.sender == GATEWAY, "not gateway");
         require(_bytes32ToAddress(orderData.outputToken) == BUY_TOKEN, "invalid buy token");
