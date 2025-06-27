@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import QRCode from "react-qr-code"
+
 import Spinner from "../../base/Spinner"
-import { getZkPassportProof } from "../../../utils/zkpassport"
 
 const ZkPassportModal = ({ url, isGeneratingProof, onClose }) => {
   return (
