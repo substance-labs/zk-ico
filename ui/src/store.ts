@@ -1,7 +1,13 @@
 import { create } from "zustand"
 
-export const useAppStore = create((set) => ({
+interface AppState {
+  sidebarOpen: boolean
+  openSidebar: () => void
+  closeSidebar: () => void
+}
+
+export const useAppStore = create<AppState>((set) => ({
   sidebarOpen: false,
-  closeSidebar: () => set(() => ({ sidebarOpen: false })),
-  openSidebar: () => set(() => ({ sidebarOpen: true })),
+  openSidebar: () => set({ sidebarOpen: true }),
+  closeSidebar: () => set({ sidebarOpen: false }),
 }))

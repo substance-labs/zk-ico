@@ -16,7 +16,7 @@ const Sidebar = () => {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity ${
+        className={`fixed inset-0 bg-white/80 z-40 md:hidden transition-opacity ${
           sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => closeSidebar()}
@@ -30,7 +30,7 @@ const Sidebar = () => {
           bg-white/80
           border-r border-gray-200
           backdrop-blur-md
-          px-4 py-6 flex flex-col justify-between
+          px-4 py-6 flex flex-col
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
         `}
@@ -38,7 +38,7 @@ const Sidebar = () => {
         <div className="flex items-center justify-between md:hidden mb-4">
           <div className="flex items-center space-x-3">
             <div className="text-2xl">🪙</div>
-            <div className="text-xl font-semibold text-white tracking-tight">ZK ICO</div>
+            <div className="text-xl font-semibold text-gray-600 tracking-tight">ZK ICO</div>
           </div>
           <button onClick={() => closeSidebar()} className="text-gray-600">
             <X className="w-6 h-6" />

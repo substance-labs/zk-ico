@@ -14,7 +14,6 @@ export default function Button({ children, disabled = false, className = "", ...
         bg-purple-500
         hover:bg-purple-600
         active:bg-purple-700
-        focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2
         text-white font-semibold
         py-3 px-5 rounded-full
         transition ease-in-out duration-150
