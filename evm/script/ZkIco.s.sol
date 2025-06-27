@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Vault} from "../src/Vault.sol";
+import {ZkIco} from "../src/ZkIco.sol";
 
-contract VaultScript is Script {
-    Vault public vault;
+contract ZkIcoScript is Script {
+    ZkIco public vault;
 
     function setUp() public {}
 

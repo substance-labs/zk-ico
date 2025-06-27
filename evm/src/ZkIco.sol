@@ -8,12 +8,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfaces/IZKPassportVerifier.sol";
 import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 
-contract Vault is IHook7683Recipient {
+contract ZkIco is IHook7683Recipient {
     address public immutable GATEWAY;
     address public immutable BUY_TOKEN;
     address public immutable ICO_TOKEN;
     address public immutable VERIFIER;
     uint256 public immutable RATE;
+    string public TITLE;
+    string public DESCRIPTION;
 
     mapping(bytes32 => uint256) public finalizableDeposits;
     mapping(bytes32 => bool) public consumedProofs;
@@ -21,16 +23,28 @@ contract Vault is IHook7683Recipient {
 
     event NewOrderToFinalize(bytes32 depositCommitment, uint256 amount);
 
-    constructor(address gateway, address buyToken, address icoToken, address verifier, uint256 rate) {
+    constructor(
+        address gateway,
+        address buyToken,
+        address icoToken,
+        address verifier,
+        uint256 rate,
+        string memory title,
+        string memory description
+    ) {
         GATEWAY = gateway;
         BUY_TOKEN = buyToken;
         ICO_TOKEN = icoToken;
-        verifier = VERIFIER;
+        VERIFIER = verifier;
         RATE = rate;
+        TITLE = title;
+        DESCRIPTION = description;
     }
 
-    function finalizeOrder(ProofVerificationParams calldata proofParams) external {
-        require(!proofParams.devMode, "invalid dev mode proof");
+    function finalizeOrder( /*ProofVerificationParams calldata proofParams*/ bytes calldata proofParams, address owner)
+        external
+    {
+        /*require(!proofParams.devMode, "invalid dev mode proof");
         bytes32 proofCommitment = keccak256(abi.encode(proofParams));
         require(!consumedProofs[proofCommitment], "proof already used");
         consumedProofs[proofCommitment] = true;
@@ -62,20 +76,20 @@ contract Vault is IHook7683Recipient {
         bytes memory data = IZKPassportVerifier(VERIFIER).getBindProofInputs(
             proofParams.committedInputs, proofParams.committedInputCounts
         );
-        (address userAddress,) = IZKPassportVerifier(VERIFIER).getBoundData(data);
+        (address userAddress,) = IZKPassportVerifier(VERIFIER).getBoundData(data);*/
 
-        bytes32 depositCommitment = keccak256(abi.encodePacked(abi.encode(proofParams), userAddress));
+        bytes32 depositCommitment = keccak256(abi.encodePacked(abi.encode(proofParams), owner));
         uint256 amount = finalizableDeposits[depositCommitment];
         require(amount > 0, "deposit not finalizable");
 
-        IERC20(ICO_TOKEN).transfer(userAddress, amount);
+        IERC20(ICO_TOKEN).transfer(owner, amount);
     }
 
     function onFilledOrder(OrderData calldata orderData) external {
         require(msg.sender == GATEWAY, "not gateway");
         require(_bytes32ToAddress(orderData.outputToken) == BUY_TOKEN, "invalid buy token");
 
-        bytes32 depositCommitment = orderData.data; // keccak256(abi.encodePacked(proof, owner));
+        bytes32 depositCommitment = orderData.data; // keccak256(abi.encodePacked(proofParams));
         require(finalizableDeposits[depositCommitment] == 0, "deposit commitment already used");
 
         uint256 amount = (orderData.amountOut * RATE) / 10 ** 18;

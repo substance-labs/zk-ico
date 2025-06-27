@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Vault} from "../src/Vault.sol";
+import {ZkIco} from "../src/ZkIco.sol";
 
-contract CounterTest is Test {
-    Vault public vault;
+contract ZkIcoTest is Test {
+    ZkIco public vault;
 
     function setUp() public {}
 }
