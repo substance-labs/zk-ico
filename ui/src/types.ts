@@ -1,31 +1,14 @@
-import type { Chain } from "viem"
-
-export type Asset = {
-  id: string
+export interface Token {
   name: string
   symbol: string
-  icon: string
-  targetAddress: `0x${string}`
-  targetChain: Chain
-  targetDecimals: number
-  sourceAddress: `0x${string}`
-  sourceChain: Chain
-  sourceDecimals: number
-  sourceBalance?: string
-  targetBalance?: string
-  formattedSourceBalance?: string
-  formattedSourceBalanceWithSymbol?: string
-  formattedTargetBalance?: string
-  formattedTargetBalanceWithSymbol?: string
+  address: string
 }
 
-export type Assets = Asset[]
-
-export type FormattedBalances = {
-  sourceBalance: string
-  targetBalance: string
-  formattedSourceBalance: string
-  formattedSourceBalanceWithSymbol: string
-  formattedTargetBalance: string
-  formattedTargetBalanceWithSymbol: string
+export interface Campaign {
+  title: string
+  description: string
+  aztecBuyToken?: Token
+  buyToken: Token
+  icoToken: Token
+  rate: string
 }

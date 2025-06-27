@@ -70,9 +70,8 @@ export default defineConfig(({ mode }) => {
     define: {
       "process.env": JSON.stringify({
         NODE_DEBUG: env.NODE_DEBUG,
-        VAULT_ADDRESS: env.VAULT_ADDRESS,
-        AZTEC_GATEWAY_7683: env.AZTEC_GATEWAY_7683,
-        L2_GATEWAY: env.L2_GATEWAY,
+        BASE_RPC_URL: env.BASE_RPC_URL,
+        ETHERSCAN_API_KEY: env.ETHERSCAN_API_KEY,
         // docs:start:bb-wasm-path
         // The path to a custom WASM file for bb.js.
         // Only the single-threaded file name is needed, the multithreaded file name will be inferred

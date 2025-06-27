@@ -4196,7 +4196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.8.2, axios@npm:^1.9.0":
+"axios@npm:^1.10.0, axios@npm:^1.8.2, axios@npm:^1.9.0":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -4246,7 +4246,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.0":
+"bignumber.js@npm:^9.0.0, bignumber.js@npm:^9.3.0":
   version: 9.3.0
   resolution: "bignumber.js@npm:9.3.0"
   checksum: 10c0/f54a79cd6fc98552ac0510c1cd9381650870ae443bdb20ba9b98e3548188d941506ac3c22a9f9c69b2cc60da9be5700e87d3f54d2825310a8b2ae999dfd6d99d
@@ -8182,6 +8182,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment@npm:^2.30.1":
+  version: 2.30.1
+  resolution: "moment@npm:2.30.1"
+  checksum: 10c0/865e4279418c6de666fca7786607705fd0189d8a7b7624e2e56be99290ac846f90878a6f602e34b4e0455c549b85385b1baf9966845962b313699e7cb847543a
+  languageName: node
+  linkType: hard
+
 "motion-dom@npm:^12.19.0":
   version: 12.19.0
   resolution: "motion-dom@npm:12.19.0"
@@ -10672,6 +10679,8 @@ __metadata:
     "@vitejs/plugin-react-swc": "npm:^3.7.2"
     "@zkpassport/poseidon2": "npm:^0.6.1"
     "@zkpassport/sdk": "npm:0.5.0"
+    axios: "npm:^1.10.0"
+    bignumber.js: "npm:^9.3.0"
     buffer-json: "npm:^2.0.0"
     eslint: "npm:^9.26.0"
     eslint-plugin-react-hooks: "npm:^5.1.0"
@@ -10679,6 +10688,7 @@ __metadata:
     framer-motion: "npm:^12.19.1"
     globals: "npm:^15.14.0"
     lucide-react: "npm:^0.523.0"
+    moment: "npm:^2.30.1"
     prettier: "npm:^3.5.3"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"

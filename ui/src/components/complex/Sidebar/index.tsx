@@ -55,7 +55,7 @@ const Sidebar = () => {
 
           <nav className="flex flex-col space-y-2 mt-6">
             {[
-              { to: "/", icon: Home, label: "Home" },
+              //{ to: "/", icon: Home, label: "Home" },
               { to: "/campaigns", icon: BarChart3, label: "Campaigns" },
             ].map(({ to, icon: Icon, label }) => {
               const isActive = pathname === to

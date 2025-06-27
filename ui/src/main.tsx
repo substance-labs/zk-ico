@@ -4,10 +4,10 @@ import { baseSepolia } from "wagmi/chains"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { createBrowserRouter, RouterProvider } from "react-router"
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router"
 
 import Campaigns from "./components/pages/Campaigns"
-import Home from "./components/pages/Home"
+// import Home from "./components/pages/Home"
 
 import "./index.css"
 
@@ -23,11 +23,11 @@ const queryClient = new QueryClient()
 const router = createBrowserRouter([
   {
     path: "/",
-    Component: Home,
+    element: <Navigate to="/campaigns" replace />,
   },
   {
     path: "/campaigns",
-    Component: Campaigns,
+    element: <Campaigns />,
   },
 ])
 
