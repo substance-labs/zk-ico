@@ -3,7 +3,6 @@ pragma solidity ^0.8.28;
 
 import {OrderEncoder, OrderData} from "./libs/OrderEncoder.sol";
 import {StringUtils} from "./libs/StringUtils.sol";
-import {ArrayUtils} from "./libs/ArrayUtils.sol";
 import {IHook7683Recipient} from "./interfaces/IHook7683Recipient.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfaces/IZKPassportVerifier.sol";
@@ -54,6 +53,7 @@ contract Vault is IHook7683Recipient {
             proofParams.committedInputs, proofParams.committedInputCounts, ProofType.NATIONALITY_EXCLUSION
         );
 
+        // NOTE: check that the user is not from North Korea
         require(
             nationalityExclusionList.length == 1 && StringUtils.equals(nationalityExclusionList[0], "KP"),
             "not the expected exclusion list"
