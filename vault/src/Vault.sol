@@ -2,14 +2,18 @@
 pragma solidity ^0.8.28;
 
 import {OrderEncoder, OrderData} from "./libs/OrderEncoder.sol";
+import {StringUtils} from "./libs/StringUtils.sol";
+import {ArrayUtils} from "./libs/ArrayUtils.sol";
 import {IHook7683Recipient} from "./interfaces/IHook7683Recipient.sol";
-import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfaces/IZKPassportVerifier.sol";
+import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 
 contract Vault is IHook7683Recipient {
     address public immutable GATEWAY;
     address public immutable BUY_TOKEN;
     address public immutable ICO_TOKEN;
+    address public immutable VERIFIER;
     uint256 public immutable RATE;
 
     mapping(bytes32 => uint256) public finalizableDeposits;
@@ -18,24 +22,53 @@ contract Vault is IHook7683Recipient {
 
     event NewOrderToFinalize(bytes32 depositCommitment, uint256 amount);
 
-    constructor(address gateway, address buyToken, address icoToken, uint256 rate) {
+    constructor(address gateway, address buyToken, address icoToken, address verifier, uint256 rate) {
         GATEWAY = gateway;
         BUY_TOKEN = buyToken;
         ICO_TOKEN = icoToken;
+        verifier = VERIFIER;
         RATE = rate;
     }
 
-    function finalizeOrder(bytes calldata proof, address owner) external {
-        bytes32 proofCommitment = keccak256(proof);
+    function finalizeOrder(ProofVerificationParams calldata proofParams) external {
+        require(!proofParams.devMode, "invalid dev mode proof");
+        bytes32 proofCommitment = keccak256(abi.encode(proofParams));
         require(!consumedProofs[proofCommitment], "proof already used");
         consumedProofs[proofCommitment] = true;
 
-        bytes32 depositCommitment = keccak256(abi.encodePacked(proof, owner));
+        (bool verified,) = IZKPassportVerifier(VERIFIER).verifyProof(proofParams);
+        require(verified, "proof is invalid");
+
+        require(
+            IZKPassportVerifier(VERIFIER).verifyScopes(proofParams.publicInputs, "your-domain.com", "my-scope"),
+            "invalid scope"
+        );
+
+        (uint256 currentDate, uint8 minAge, uint8 maxAge) = IZKPassportVerifier(VERIFIER).getAgeProofInputs(
+            proofParams.committedInputs, proofParams.committedInputCounts
+        );
+        require(block.timestamp >= currentDate, "date used in proof is in the future");
+        require(minAge == 18 && maxAge == 0, "user needs to be above 18");
+
+        string[] memory nationalityExclusionList = IZKPassportVerifier(VERIFIER).getCountryProofInputs(
+            proofParams.committedInputs, proofParams.committedInputCounts, ProofType.NATIONALITY_EXCLUSION
+        );
+
+        require(
+            nationalityExclusionList.length == 1 && StringUtils.equals(nationalityExclusionList[0], "KP"),
+            "not the expected exclusion list"
+        );
+
+        bytes memory data = IZKPassportVerifier(VERIFIER).getBindProofInputs(
+            proofParams.committedInputs, proofParams.committedInputCounts
+        );
+        (address userAddress,) = IZKPassportVerifier(VERIFIER).getBoundData(data);
+
+        bytes32 depositCommitment = keccak256(abi.encodePacked(abi.encode(proofParams), userAddress));
         uint256 amount = finalizableDeposits[depositCommitment];
         require(amount > 0, "deposit not finalizable");
-        // TODO: verify zk passport proof
 
-        IERC20(ICO_TOKEN).transfer(owner, amount);
+        IERC20(ICO_TOKEN).transfer(userAddress, amount);
     }
 
     function onFilledOrder(OrderData calldata orderData) external {
