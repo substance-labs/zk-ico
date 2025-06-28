@@ -9,6 +9,7 @@ import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfa
 import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 
 contract ZkIco is IHook7683Recipient {
+    uint256 public immutable VERSION = uint256(keccak256(abi.encodePacked("test_1")));
     address public immutable GATEWAY;
     address public immutable BUY_TOKEN;
     bytes32 public immutable AZTEC_BUY_TOKEN;
@@ -23,7 +24,7 @@ contract ZkIco is IHook7683Recipient {
     mapping(address => uint256) public amounts;
 
     event NewOrderToFinalize(bytes32 depositCommitment, uint256 amount);
-    event NewZkIcoCampaign(address zkIco);
+    event NewZkIcoCampaign(uint256 version, address zkIco);
 
     constructor(
         address gateway,
@@ -44,7 +45,7 @@ contract ZkIco is IHook7683Recipient {
         TITLE = title;
         DESCRIPTION = description;
 
-        emit NewZkIcoCampaign(address(this));
+        emit NewZkIcoCampaign(VERSION, address(this));
     }
 
     function finalizeOrder( /*ProofVerificationParams calldata proofParams*/ bytes calldata proofParams, address owner)
@@ -84,7 +85,7 @@ contract ZkIco is IHook7683Recipient {
         );
         (address userAddress,) = IZKPassportVerifier(VERIFIER).getBoundData(data);*/
 
-        bytes32 depositCommitment = keccak256(abi.encodePacked(abi.encode(proofParams), owner));
+        bytes32 depositCommitment = keccak256(abi.encode(proofParams));
         uint256 amount = finalizableDeposits[depositCommitment];
         require(amount > 0, "deposit not finalizable");
 
@@ -126,7 +127,7 @@ contract ZkIco is IHook7683Recipient {
         require(orderData.inputToken == AZTEC_BUY_TOKEN, "invalid aztec buy token");
         require(_bytes32ToAddress(orderData.outputToken) == BUY_TOKEN, "invalid buy token");
 
-        bytes32 depositCommitment = orderData.data; // keccak256(abi.encodePacked(proofParams));
+        bytes32 depositCommitment = orderData.data; // keccak256(abi.encode(proofParams));
         require(finalizableDeposits[depositCommitment] == 0, "deposit commitment already used");
 
         uint256 amount = (orderData.amountOut * RATE) / 10 ** 18;
