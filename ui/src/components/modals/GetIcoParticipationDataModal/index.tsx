@@ -1,10 +1,13 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Campaign } from "../../../types"
 import Button from "../../base/Button"
 import Input from "../../base/Input"
 import Label from "../../base/Label"
 import Modal, { type ModalProps } from "../Modal"
 import { isAddress } from "viem"
+import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { AztecAddress } from "@aztec/aztec.js"
+import { getAztecWallet } from "../../../utils/aztec"
 
 interface GetIcoParticipationDataModalProps extends ModalProps {
   campaign: Campaign
@@ -19,6 +22,24 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
 }) => {
   const [address, setAddress] = useState<string>("")
   const [amount, setAmount] = useState<string>("")
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const aztecWallet = await getAztecWallet()
+        const token = await TokenContract.at(AztecAddress.fromString(campaign.aztecBuyToken.address), aztecWallet)
+        const balance: bigint = await token.methods.balance_of_private(aztecWallet.getAddress()).simulate()
+
+        console.log(balance)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    if (visible) {
+      fetchBalance()
+    }
+  }, [campaign, visible])
 
   const isValidAddress = useMemo(() => isAddress(address), [address])
 

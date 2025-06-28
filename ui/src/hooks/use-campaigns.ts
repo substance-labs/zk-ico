@@ -14,6 +14,7 @@ import axios from "axios"
 import BigNumber from "bignumber.js"
 import { AztecAddress, Fr } from "@aztec/aztec.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { poseidon2HashBytes } from "@aztec/foundation/crypto"
 
 import { useAppStore } from "../store.js"
 import zkIcoAbi from "../utils/abi/zkIco.json"
@@ -23,12 +24,11 @@ import { getZkPassportProof } from "../utils/zkpassport.js"
 import settings from "../settings/index.js"
 import { getAztecWallet } from "../utils/aztec.js"
 import { AztecGateway7683Contract } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
+import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
 
 import type { Campaign, CreateCampaign } from "../types.js"
-import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
-import { poseidon2Hash, poseidon2HashBytes } from "@aztec/foundation/crypto"
 
-const TOPIC = "0x1bdd9f6726be99ecfae808526a171c08f3b3638fb7529f022945a386005580f0"
+const TOPIC = "0x60b9b0a19932bdb414abc97a985884150d3e16dae4b1e007681f0c0949bcde98"
 
 interface UseCampaignsOptions {
   initialFetch?: boolean
@@ -77,9 +77,11 @@ export const useCampaigns = (options?: UseCampaignsOptions) => {
               buyTokenAddress,
               buyTokenName,
               buyTokenSymbol,
+              buyTokenDecimals,
               icoTokenAddress,
               icoTokenName,
               icoTokenSymbol,
+              icoTokenDecimals,
               rate,
             ],
             index,
@@ -91,16 +93,19 @@ export const useCampaigns = (options?: UseCampaignsOptions) => {
               address: aztecBuyToken,
               symbol: buyTokenSymbol, // same symbol for now
               name: buyTokenName, // same name for now
+              decimals: buyTokenDecimals,
             },
             buyToken: {
               name: buyTokenName,
               symbol: buyTokenSymbol,
               address: buyTokenAddress,
+              decimals: buyTokenDecimals,
             },
             icoToken: {
               name: icoTokenName,
               symbol: icoTokenSymbol,
               address: icoTokenAddress,
+              decimals: icoTokenDecimals,
             },
             rate: BigNumber(rate)
               .dividedBy(10 ** 18)
@@ -256,7 +261,6 @@ export const useParticipateToCampaign = () => {
       console.log(`order ${orderId} sent: ${receipt.txHash.toString()}`)
 
       // TODO: finalize
-
     } catch (err) {
       console.error(err)
     }

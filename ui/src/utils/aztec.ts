@@ -14,7 +14,6 @@ import { deriveSigningKey } from "@aztec/stdlib/keys"
 import { getSchnorrAccount, SchnorrAccountContractArtifact } from "@aztec/accounts/schnorr"
 
 import { AztecGateway7683ContractArtifact } from "./artifacts/AztecGateway7683/AztecGateway7683"
-import { AZTEC_7683_CHAIN_ID } from "../settings/constants"
 import settings from "../settings"
 
 export interface RegisterContractParams {
@@ -76,7 +75,10 @@ export const getPxe = (): PXE => {
 }
 
 let accountRegistered = false
+let wallet = null
 export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
+  if (wallet) return wallet
+
   const pxe = getPxe()
 
   // TODO: integrate wallet
@@ -96,7 +98,7 @@ export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
 
   const signingKey = deriveSigningKey(secretKey)
   const account = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
-  const wallet = await account.getWallet()
+  wallet = await account.getWallet()
 
   if (!accountRegistered) {
     await pxe.registerAccount(secretKey, (await account.getCompleteAddress()).partialAddress)
