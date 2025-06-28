@@ -8,6 +8,7 @@ export type GetZkPassportProofParams = {
   onProofGenerated?: (proof: unknown) => void
   onUrl: (url: string) => void
   scope: string
+  address: string
 }
 
 export const getZkPassportProof = async ({
@@ -16,6 +17,7 @@ export const getZkPassportProof = async ({
   onProofGenerated: _onProofGenerated,
   onUrl,
   scope,
+  address,
 }: GetZkPassportProofParams): Promise<[SolidityVerifierParameters, unknown]> => {
   const zkPassport = new ZKPassport()
 
@@ -33,6 +35,7 @@ export const getZkPassportProof = async ({
   //queryBuilder.in("nationality", "North Korea")
   queryBuilder.gte("age", 18)
   queryBuilder.done()
+  queryBuilder.bind("user_address", address)
   onUrl(url)
 
   if (_onRequestReceived) onRequestReceived(_onRequestReceived)

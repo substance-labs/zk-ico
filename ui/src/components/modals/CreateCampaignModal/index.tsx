@@ -70,9 +70,7 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
   }, [rate, icoTokenName, icoTokenSymbol, title, description, icoTokenTotalSupply, icoTokenReceiver, create, onCreated])
 
   return (
-    <Modal visible={visible} onClose={onClose}>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center tracking-tight">Create Campaign</h2>
-
+    <Modal title="Create Campaign" visible={visible} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <Label htmlFor="title" className="mb-1 block">

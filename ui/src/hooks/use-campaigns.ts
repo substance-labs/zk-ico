@@ -107,9 +107,10 @@ export const useParticipateToCampaign = () => {
   const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
   const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
 
-  const participate = useCallback(async (campaign: Campaign) => {
+  const participate = useCallback(async (campaign: Campaign, receiverAddress: string) => {
     try {
       const [proofParams] = await getZkPassportProof({
+        address: receiverAddress,
         scope: "scope",
         onGeneratingProof: () => {
           setIsGeneratingZkPassportProof(true)

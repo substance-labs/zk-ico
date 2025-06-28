@@ -5,9 +5,10 @@ export interface ModalProps {
   visible: boolean
   onClose: React.MouseEventHandler<HTMLButtonElement>
   children?: React.ReactNode
+  title?: string
 }
 
-const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({ visible, title, onClose, children }) => {
   return (
     <AnimatePresence>
       {visible && (
@@ -24,6 +25,8 @@ const Modal: React.FC<ModalProps> = ({ visible, onClose, children }) => {
             transition={{ duration: 0.3 }}
             className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col items-center relative text-cente border shadow-sm p-6"
           >
+            {title && <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center tracking-tight">{title}</h2>}
+
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer"
               onClick={onClose}

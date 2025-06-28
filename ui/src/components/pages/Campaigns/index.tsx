@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Plus } from "lucide-react"
 
 import { useCampaigns, useParticipateToCampaign } from "../../../hooks/use-campaigns"
@@ -8,6 +8,7 @@ import CreateCampaignModal from "../../modals/CreateCampaignModal"
 import SecondaryButton from "../../base/SecondaryButton"
 import Button from "../../base/Button"
 import ZkPassportModal from "../../modals/ZkPassportModal"
+import GetIcoAddressModal from "../../modals/GetIcoAddressModal"
 
 import type { Campaign } from "../../../types"
 
@@ -49,9 +50,30 @@ export const CampaignCard = ({
 
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
+  const [getAddressModalVisible, setGetAddressModalVisible] = useState<boolean>(false)
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const { campaigns } = useCampaigns()
   const { participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
     useParticipateToCampaign()
+
+  const onGetAddress = useCallback((campaign: Campaign) => {
+    setSelectedCampaign(campaign)
+  }, [])
+
+  const onParticipate = useCallback(
+    (receiverAddress: string) => {
+      setTimeout(() => {
+        try {
+          participate(selectedCampaign, receiverAddress)
+        } catch (err) {
+          console.error(err)
+        }
+      }, 500)
+
+      setSelectedCampaign(null)
+    },
+    [selectedCampaign],
+  )
 
   return (
     <MainLayout>
@@ -64,7 +86,7 @@ const Campaigns = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
           {campaigns.map((campaign, idx) => (
-            <CampaignCard key={idx} campaign={campaign} onParticipate={() => participate(campaign)} />
+            <CampaignCard key={idx} campaign={campaign} onParticipate={() => onGetAddress(campaign)} />
           ))}
         </section>
       </div>
@@ -78,6 +100,12 @@ const Campaigns = () => {
         visible={createCampaignModalVisible}
         onClose={() => setCreateCampaignModalVisible(false)}
         onCreated={() => setCreateCampaignModalVisible(false)}
+      />
+      <GetIcoAddressModal
+        campaign={selectedCampaign}
+        visible={Boolean(selectedCampaign)}
+        onClose={() => setGetAddressModalVisible(false)}
+        onAddress={onParticipate}
       />
     </MainLayout>
   )
