@@ -9,7 +9,6 @@ import {ProofType, ProofVerificationParams, IZKPassportVerifier} from "./interfa
 import {IOriginSettler, OnchainCrossChainOrder} from "./interfaces/IERC7683.sol";
 
 contract ZkIco is IHook7683Recipient {
-    uint256 public immutable VERSION = uint256(keccak256(abi.encodePacked("test_1")));
     address public immutable GATEWAY;
     address public immutable BUY_TOKEN;
     bytes32 public immutable AZTEC_BUY_TOKEN;
@@ -24,7 +23,7 @@ contract ZkIco is IHook7683Recipient {
     mapping(address => uint256) public amounts;
 
     event NewOrderToFinalize(bytes32 depositCommitment, uint256 amount);
-    event NewZkIcoCampaign(uint256 version, address zkIco);
+    event NewZkIcoCampaignTest1(address zkIco);
 
     constructor(
         address gateway,
@@ -45,7 +44,7 @@ contract ZkIco is IHook7683Recipient {
         TITLE = title;
         DESCRIPTION = description;
 
-        emit NewZkIcoCampaign(VERSION, address(this));
+        emit NewZkIcoCampaignTest1(address(this));
     }
 
     function finalizeOrder( /*ProofVerificationParams calldata proofParams*/ bytes calldata proofParams, address owner)
@@ -102,9 +101,11 @@ contract ZkIco is IHook7683Recipient {
             address,
             string memory,
             string memory,
+            uint256,
             address,
             string memory,
             string memory,
+            uint256,
             uint256
         )
     {
@@ -115,9 +116,11 @@ contract ZkIco is IHook7683Recipient {
             BUY_TOKEN,
             IERC20Metadata(BUY_TOKEN).name(),
             IERC20Metadata(BUY_TOKEN).symbol(),
+            IERC20Metadata(BUY_TOKEN).decimals(),
             ICO_TOKEN,
             IERC20Metadata(ICO_TOKEN).name(),
             IERC20Metadata(ICO_TOKEN).symbol(),
+            IERC20Metadata(ICO_TOKEN).decimals(),
             RATE
         );
     }
