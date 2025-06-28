@@ -72,8 +72,7 @@ export default defineConfig(({ mode }) => {
         NODE_DEBUG: env.NODE_DEBUG,
         BASE_RPC_URL: env.BASE_RPC_URL,
         ETHERSCAN_API_KEY: env.ETHERSCAN_API_KEY,
-        VITE_API_URL: env.VITE_API_URL,
-        VITE_MINT_TO_ADDRESS: env.VITE_MINT_TO_ADDRESS,
+        API_URL: env.API_URL,
         // docs:start:bb-wasm-path
         // The path to a custom WASM file for bb.js.
         // Only the single-threaded file name is needed, the multithreaded file name will be inferred

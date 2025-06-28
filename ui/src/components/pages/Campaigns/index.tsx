@@ -21,7 +21,7 @@ export const CampaignCard = ({
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 max-w-md">
       <h3 className="text-xl font-semibold text-gray-900 tracking-tight">{title}</h3>
-      <p className="text-sm text-gray-600 mt-2 line-clamp-3">{description}</p>
+      <p className="text-sm text-gray-600 mt-2 line-clamp-3 h-20">{description}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
         <div className="bg-gray-50 rounded-lg p-3">
@@ -62,7 +62,7 @@ const Campaigns = () => {
           </SecondaryButton>
         </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
           {campaigns.map((campaign, idx) => (
             <CampaignCard key={idx} campaign={campaign} onParticipate={() => participate(campaign)} />
           ))}
@@ -74,7 +74,11 @@ const Campaigns = () => {
         onClose={resetZkPassportProof}
         isGeneratingProof={isGeneratingZkPassportProof}
       />
-      <CreateCampaignModal visible={createCampaignModalVisible} onClose={() => setCreateCampaignModalVisible(false)} />
+      <CreateCampaignModal
+        visible={createCampaignModalVisible}
+        onClose={() => setCreateCampaignModalVisible(false)}
+        onCreated={() => setCreateCampaignModalVisible(false)}
+      />
     </MainLayout>
   )
 }

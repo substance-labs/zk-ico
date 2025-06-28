@@ -15,14 +15,14 @@ export interface Campaign {
 }
 
 export interface CreateCampaign {
-  gateway: string
-  verifier: string
   aztecBuyTokenAddress: string
   buyTokenAddress: string
   icoToken: {
     name: string
     symbol: string
+    totalSupply: string
   }
+  icoTokenReceiver: string
   title: string
   description: string
   rate: string

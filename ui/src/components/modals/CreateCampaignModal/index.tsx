@@ -1,40 +1,73 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
+import { toast } from "react-toastify"
 
 import { useCreateCampaign } from "../../../hooks/use-campaigns"
+import settings from "../../../settings"
 
 import Input from "../../base/Input"
 import Button from "../../base/Button"
 import Label from "../../base/Label"
 import Modal, { type ModalProps } from "../Modal"
-import { zeroAddress } from "viem"
-import settings from "../../../settings"
 
-interface CreateCampaignModalProps extends ModalProps {}
+interface CreateCampaignModalProps extends ModalProps {
+  onCreated?: () => void
+}
 
-const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onClose }) => {
+const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onClose, onCreated }) => {
   const [title, setTitle] = useState<string>("")
   const [description, setDescription] = useState<string>("")
   const [icoTokenName, setIcoTokenName] = useState<string>("")
   const [icoTokenSymbol, setIcoTokenSymbol] = useState<string>("")
+  const [icoTokenTotalSupply, setIcoTokenTotalSupply] = useState<string>("")
+  const [icoTokenReceiver, setIcoTokenReceiver] = useState<string>("")
   const [rate, setRate] = useState<string>("")
 
-  const { create } = useCreateCampaign()
+  const { create, isCreating } = useCreateCampaign()
 
-  const onCreate = useCallback(() => {
-    create({
-      gateway: settings.addresses.l2EvmGateway,
-      verifier: zeroAddress, // disabled proof verification,
-      aztecBuyTokenAddress: settings.addresses.buyToken.aztecAddress,
-      icoToken: {
-        name: icoTokenName,
-        symbol: icoTokenSymbol,
-      },
-      buyTokenAddress: settings.addresses.buyToken.baseSepoliaAddress,
-      title,
-      description,
-      rate,
-    })
-  }, [rate, icoTokenName, icoTokenSymbol, title, description, create])
+  const isButtonDisabled = useMemo(() => {
+    return (
+      title.length === 0 ||
+      description.length === 0 ||
+      icoTokenName.length === 0 ||
+      icoTokenSymbol.length === 0 ||
+      icoTokenTotalSupply.length === 0 ||
+      icoTokenReceiver.length === 0 ||
+      rate.length === 0 ||
+      isCreating
+    )
+  }, [rate, icoTokenName, icoTokenSymbol, title, description, icoTokenTotalSupply, icoTokenReceiver, isCreating])
+
+  const onCreate = useCallback(async () => {
+    try {
+      await create({
+        aztecBuyTokenAddress: settings.addresses.buyToken.aztecAddress,
+        icoToken: {
+          name: icoTokenName,
+          symbol: icoTokenSymbol,
+          totalSupply: icoTokenTotalSupply,
+        },
+        icoTokenReceiver,
+        buyTokenAddress: settings.addresses.buyToken.baseSepoliaAddress,
+        title,
+        description,
+        rate,
+      })
+
+      toast.success(<div className="text-sm text-gray-600">Your campaign was created successfully.</div>, {
+        position: "top-right",
+        autoClose: 3000,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
+
+      setTimeout(() => {
+        onCreated && onCreated()
+      }, 1500)
+    } catch (err) {
+      console.error(err)
+    }
+  }, [rate, icoTokenName, icoTokenSymbol, title, description, icoTokenTotalSupply, icoTokenReceiver, create, onCreated])
 
   return (
     <Modal visible={visible} onClose={onClose}>
@@ -42,7 +75,7 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="title" className="text-sm mb-1 block">
+          <Label htmlFor="title" className="mb-1 block">
             Title
           </Label>
           <Input
@@ -55,13 +88,13 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
         </div>
 
         <div>
-          <Label htmlFor="description" className="text-sm mb-1 block">
+          <Label htmlFor="description" className="mb-1 block">
             Description
           </Label>
           <textarea
             id="description"
             placeholder="Describe your campaign..."
-            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-purple-500 resize-none"
+            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-purple-500 resize-none"
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -70,7 +103,7 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="icoTokenName" className="text-sm mb-1 block">
+            <Label htmlFor="icoTokenName" className="mb-1 block">
               Token Name
             </Label>
             <Input
@@ -82,7 +115,7 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
           </div>
 
           <div>
-            <Label htmlFor="icoTokenSymbol" className="text-sm mb-1 block">
+            <Label htmlFor="icoTokenSymbol" className="mb-1 block">
               Symbol
             </Label>
             <Input
@@ -95,19 +128,40 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
         </div>
 
         <div>
-          <Label className="text-sm mb-1 block">Buy Token</Label>
+          <Label className="mb-1 block">Total Supply</Label>
+          <Input
+            id="icoTokenTotalSupply"
+            placeholder="e.g. 10000"
+            type="number"
+            value={icoTokenTotalSupply}
+            onChange={(e) => setIcoTokenTotalSupply(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label className="mb-1 block">Receiver</Label>
+          <Input
+            id="icoTokenReceiver"
+            placeholder="e.g. 0x1234...6789"
+            value={icoTokenReceiver}
+            onChange={(e) => setIcoTokenReceiver(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label className="mb-1 block">Buy Token</Label>
           <Input value="ETH" disabled />
         </div>
 
         <div>
-          <Label className="text-sm mb-1 block">Rate (1 ETH = ? Buy Token)</Label>
+          <Label className="mb-1 block">Rate (1 ETH = ? Buy Token)</Label>
           <Input placeholder="" type="number" value={rate} onChange={(e) => setRate(e.target.value)} />
         </div>
       </div>
 
       <div className="mt-6">
-        <Button className="py-2 px-3" onClick={onCreate}>
-          Create Campaign
+        <Button className="py-2 w-42" disabled={isButtonDisabled} onClick={onCreate}>
+          {isCreating ? "Creating ..." : "Create Campaign"}
         </Button>
       </div>
     </Modal>
