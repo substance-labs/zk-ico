@@ -27,17 +27,15 @@ export const registerAztecContracts = async () => {
   const wallet = await getAztecWallet()
   const pxe = await getPxe()
   await Promise.all([
-    ...settings.assets.map(({ sourceAddress }) => {
-      return registerContract(AztecAddress.fromString(sourceAddress), {
-        wallet,
-        artifact: TokenContractArtifact,
-      })
+    registerContract(AztecAddress.fromString(settings.addresses.aztecBuyToken), {
+      wallet,
+      artifact: TokenContractArtifact,
     }),
-    registerContract(AztecAddress.fromString(settings.contractAddresses[AZTEC_7683_CHAIN_ID].gateway), {
+    registerContract(AztecAddress.fromString(settings.addresses.aztecGateway), {
       wallet,
       artifact: AztecGateway7683ContractArtifact,
     }),
-    pxe.registerSender(AztecAddress.fromString(settings.contractAddresses[AZTEC_7683_CHAIN_ID].gateway)),
+    pxe.registerSender(AztecAddress.fromString(settings.addresses.aztecGateway)),
   ])
 }
 

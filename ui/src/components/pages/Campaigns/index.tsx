@@ -8,7 +8,7 @@ import CreateCampaignModal from "../../modals/CreateCampaignModal"
 import SecondaryButton from "../../base/SecondaryButton"
 import Button from "../../base/Button"
 import ZkPassportModal from "../../modals/ZkPassportModal"
-import GetIcoAddressModal from "../../modals/GetIcoAddressModal"
+import GetIcoParticipationDataModal from "../../modals/GetIcoParticipationDataModal"
 
 import type { Campaign } from "../../../types"
 
@@ -50,7 +50,6 @@ export const CampaignCard = ({
 
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
-  const [getAddressModalVisible, setGetAddressModalVisible] = useState<boolean>(false)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const { campaigns } = useCampaigns()
   const { participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
@@ -61,10 +60,10 @@ const Campaigns = () => {
   }, [])
 
   const onParticipate = useCallback(
-    (receiverAddress: string) => {
+    (receiverAddress: string, amount: string) => {
       setTimeout(() => {
         try {
-          participate(selectedCampaign, receiverAddress)
+          participate(selectedCampaign, receiverAddress, amount)
         } catch (err) {
           console.error(err)
         }
@@ -101,11 +100,11 @@ const Campaigns = () => {
         onClose={() => setCreateCampaignModalVisible(false)}
         onCreated={() => setCreateCampaignModalVisible(false)}
       />
-      <GetIcoAddressModal
+      <GetIcoParticipationDataModal
         campaign={selectedCampaign}
         visible={Boolean(selectedCampaign)}
-        onClose={() => setGetAddressModalVisible(false)}
-        onAddress={onParticipate}
+        onClose={() => setSelectedCampaign(null)}
+        onData={onParticipate}
       />
     </MainLayout>
   )

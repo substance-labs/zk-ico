@@ -6,20 +6,26 @@ import Label from "../../base/Label"
 import Modal, { type ModalProps } from "../Modal"
 import { isAddress } from "viem"
 
-interface GetAddressModalProps extends ModalProps {
+interface GetIcoParticipationDataModalProps extends ModalProps {
   campaign: Campaign
-  onAddress: (address: string) => void
+  onData: (address: string, amount: string) => void
 }
 
-const GetIcoAddressModal: React.FC<GetAddressModalProps> = ({ campaign, visible, onClose, onAddress }) => {
+const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> = ({
+  campaign,
+  visible,
+  onClose,
+  onData,
+}) => {
   const [address, setAddress] = useState<string>("")
+  const [amount, setAmount] = useState<string>("")
 
   const isValidAddress = useMemo(() => isAddress(address), [address])
 
   const onConfirm = useCallback(() => {
-    onAddress(address)
+    onData(address, amount)
     setAddress("")
-  }, [address, onAddress])
+  }, [address, amount, onData])
 
   return (
     <Modal visible={visible} title={"Participate in ICO"} onClose={onClose}>
@@ -30,7 +36,7 @@ const GetIcoAddressModal: React.FC<GetAddressModalProps> = ({ campaign, visible,
           </Label>
           <Input
             id="recipient"
-            placeholder="0x..."
+            placeholder="e.g. 0x2345 ..."
             className="bg-gray-50 border-gray-300 focus:ring-gray-900 focus:border-purple-500"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -43,6 +49,20 @@ const GetIcoAddressModal: React.FC<GetAddressModalProps> = ({ campaign, visible,
             <strong>Base</strong>.
           </div>
         )}
+
+        <div>
+          <Label htmlFor="amount" className="text-sm mb-1 block">
+            Amount (ETH on Aztec)
+          </Label>
+          <Input
+            id="amount"
+            placeholder="e.g. 0.003"
+            className="bg-gray-50 border-gray-300 focus:ring-gray-900 focus:border-purple-500"
+            type="number"
+            value={address}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="mt-6">
@@ -54,4 +74,4 @@ const GetIcoAddressModal: React.FC<GetAddressModalProps> = ({ campaign, visible,
   )
 }
 
-export default GetIcoAddressModal
+export default GetIcoParticipationDataModal

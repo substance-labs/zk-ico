@@ -1,18 +1,34 @@
-import { createPublicClient, http, zeroAddress } from "viem"
+import {
+  createPublicClient,
+  encodeAbiParameters,
+  encodePacked,
+  hexToBytes,
+  http,
+  keccak256,
+  padHex,
+  zeroAddress,
+} from "viem"
 import { baseSepolia } from "viem/chains"
 import { useCallback, useEffect, useState } from "react"
 import axios from "axios"
 import BigNumber from "bignumber.js"
+import { AztecAddress, Fr } from "@aztec/aztec.js"
+import { TokenContract } from "@aztec/noir-contracts.js/Token"
 
 import { useAppStore } from "../store.js"
 import zkIcoAbi from "../utils/abi/zkIco.json"
 import zkIcoContractBytecode from "../utils/bytecodes/zkico.json"
 import zkIcoTokenBytecode from "../utils/bytecodes/token.json"
-import type { Campaign, CreateCampaign } from "../types.js"
 import { getZkPassportProof } from "../utils/zkpassport.js"
 import settings from "../settings/index.js"
+import { getAztecWallet } from "../utils/aztec.js"
+import { AztecGateway7683Contract } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
 
-const TOPIC = "0x531026765026b9af1528359f0fb0ffd560e49666995880799502227196c5d897"
+import type { Campaign, CreateCampaign } from "../types.js"
+import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
+import { poseidon2Hash, poseidon2HashBytes } from "@aztec/foundation/crypto"
+
+const TOPIC = "0x1bdd9f6726be99ecfae808526a171c08f3b3638fb7529f022945a386005580f0"
 
 interface UseCampaignsOptions {
   initialFetch?: boolean
@@ -34,7 +50,7 @@ export const useCampaigns = (options?: UseCampaignsOptions) => {
       } = await axios.get(
         `https://api.etherscan.io/v2/api?chainid=${baseSepolia.id}&module=logs&action=getLogs&topic0=${TOPIC}&apikey=${etherscanApiKey}`,
       )
-      const zkIcoAddresses = result.map(({ address }: any) => address).slice(7) // FIXME remove first one as it's wrong.
+      const zkIcoAddresses = result.map(({ address }: any) => address)
       const client = createPublicClient({
         chain: baseSepolia,
         transport: http(),
@@ -68,10 +84,14 @@ export const useCampaigns = (options?: UseCampaignsOptions) => {
             ],
             index,
           ) => ({
-            address: zkIcoAddresses[index],
+            zkIcoAddress: zkIcoAddresses[index],
             title,
             description,
-            aztecBuyToken,
+            aztecBuyToken: {
+              address: aztecBuyToken,
+              symbol: buyTokenSymbol, // same symbol for now
+              name: buyTokenName, // same name for now
+            },
             buyToken: {
               name: buyTokenName,
               symbol: buyTokenSymbol,
@@ -107,9 +127,9 @@ export const useParticipateToCampaign = () => {
   const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
   const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
 
-  const participate = useCallback(async (campaign: Campaign, receiverAddress: string) => {
+  const participate = useCallback(async (campaign: Campaign, receiverAddress: string, amount: string) => {
     try {
-      const [proofParams] = await getZkPassportProof({
+      /*const [proofParams] = await getZkPassportProof({
         address: receiverAddress,
         scope: "scope",
         onGeneratingProof: () => {
@@ -128,7 +148,115 @@ export const useParticipateToCampaign = () => {
           console.log("zk passport zkPassportCurrentUrl received")
           setCurrentZkPassportUrl(zkPassportCurrentUrl)
         },
+      })*/
+
+      const onChainAmount = BigNumber(amount)
+        .multipliedBy(10 ** 18)
+        .toFixed()
+      const gatewayAddress = AztecAddress.fromString(settings.addresses.aztecGateway)
+      const aztecWallet = await getAztecWallet()
+      const [token, aztecGateway] = await Promise.all([
+        TokenContract.at(AztecAddress.fromString(campaign.aztecBuyToken.address), aztecWallet),
+        AztecGateway7683Contract.at(gatewayAddress, aztecWallet),
+      ])
+
+      const fillDeadline = 2 ** 32 - 1
+      const nonce = Fr.random()
+      const witness = await aztecWallet.createAuthWit({
+        caller: gatewayAddress,
+        action: token.methods.transfer_to_public(
+          aztecWallet.getAddress(),
+          gatewayAddress,
+          BigInt(onChainAmount),
+          nonce,
+        ),
       })
+
+      // TODO: use valid proof
+      const depositCommitment = keccak256(
+        encodeAbiParameters(
+          [
+            {
+              type: "tuple",
+              components: [
+                { name: "vkeyHash", type: "bytes32" },
+                { name: "proof", type: "bytes" },
+                { name: "publicInputs", type: "bytes32[]" },
+                { name: "committedInputs", type: "bytes" },
+                { name: "committedInputCounts", type: "uint256[]" },
+                { name: "validityPeriodInDays", type: "uint256" },
+                { name: "domain", type: "string" },
+                { name: "scope", type: "string" },
+                { name: "devMode", type: "bool" },
+              ],
+            },
+          ],
+          [
+            {
+              vkeyHash: padHex("0x0"),
+              proof: padHex("0x0"),
+              publicInputs: [padHex("0x0")],
+              committedInputs: padHex("0x0"),
+              committedInputCounts: [0n],
+              validityPeriodInDays: 0n,
+              domain: "hello",
+              scope: "hello",
+              devMode: false,
+            },
+          ],
+        ),
+      )
+
+      const orderData = encodePacked(
+        [
+          "bytes32",
+          "bytes32",
+          "bytes32",
+          "bytes32",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint32",
+          "uint32",
+          "bytes32",
+          "uint32",
+          "uint8",
+          "bytes32",
+        ],
+        [
+          PRIVATE_SENDER,
+          padHex(campaign.zkIcoAddress as `0x${string}`),
+          campaign.aztecBuyToken.address as `0x${string}`,
+          padHex(campaign.buyToken.address as `0x${string}`),
+          BigInt(onChainAmount),
+          BigInt(onChainAmount),
+          nonce.toBigInt(),
+          AZTEC_7683_CHAIN_ID,
+          baseSepolia.id,
+          padHex(settings.addresses.aztecGateway as `0x${string}`),
+          fillDeadline,
+          PRIVATE_ORDER_WITH_HOOK,
+          depositCommitment,
+        ],
+      )
+
+      const receipt = await aztecGateway.methods
+        .open_private({
+          fill_deadline: fillDeadline,
+          order_data: Array.from(hexToBytes(orderData)),
+          order_data_type: Array.from(hexToBytes(ORDER_DATA_TYPE)),
+        })
+        .with({
+          authWitnesses: [witness],
+        })
+        .send()
+        .wait()
+
+      const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))
+      console.log(`order ${orderId} sent: ${receipt.txHash.toString()}`)
+
+      // TODO: finalize
+
     } catch (err) {
       console.error(err)
     }

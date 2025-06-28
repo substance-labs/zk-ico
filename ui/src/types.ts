@@ -5,10 +5,10 @@ export interface Token {
 }
 
 export interface Campaign {
-  address: string
+  zkIcoAddress: string
   title: string
   description: string
-  aztecBuyToken?: Token
+  aztecBuyToken: Token
   buyToken: Token
   icoToken: Token
   rate: string
