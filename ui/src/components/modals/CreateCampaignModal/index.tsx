@@ -40,14 +40,14 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
   const onCreate = useCallback(async () => {
     try {
       await create({
-        aztecBuyTokenAddress: settings.addresses.buyToken.aztecAddress,
+        aztecBuyTokenAddress: settings.addresses.aztecBuyToken,
         icoToken: {
           name: icoTokenName,
           symbol: icoTokenSymbol,
           totalSupply: icoTokenTotalSupply,
         },
         icoTokenReceiver,
-        buyTokenAddress: settings.addresses.buyToken.baseSepoliaAddress,
+        buyTokenAddress: settings.addresses.baseSepoliaBuyToken,
         title,
         description,
         rate,

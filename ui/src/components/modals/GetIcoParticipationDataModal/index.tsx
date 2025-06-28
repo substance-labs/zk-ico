@@ -41,11 +41,17 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
     }
   }, [campaign, visible])
 
+  useEffect(() => {
+    if (!visible) {
+      setAddress("")
+      setAmount("")
+    }
+  }, [visible])
+
   const isValidAddress = useMemo(() => isAddress(address), [address])
 
   const onConfirm = useCallback(() => {
     onData(address, amount)
-    setAddress("")
   }, [address, amount, onData])
 
   return (
@@ -80,14 +86,14 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
             placeholder="e.g. 0.003"
             className="bg-gray-50 border-gray-300 focus:ring-gray-900 focus:border-purple-500"
             type="number"
-            value={address}
+            value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
         </div>
       </div>
 
       <div className="mt-6">
-        <Button disabled={!isValidAddress} className="w-full py-2 px-8" onClick={onConfirm}>
+        <Button disabled={!isValidAddress || amount.length === 0} className="w-full py-2 px-8" onClick={onConfirm}>
           Confirm
         </Button>
       </div>
