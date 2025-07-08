@@ -16,7 +16,7 @@ import { AztecAddress, Fr } from "@aztec/aztec.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
 import { poseidon2HashBytes } from "@aztec/foundation/crypto"
 
-import { useAppStore } from "../store.js"
+import { useAppStore } from "../store"
 import zkIcoAbi from "../utils/abi/zkIco.json"
 import zkIcoContractBytecode from "../utils/bytecodes/zkico.json"
 import zkIcoTokenBytecode from "../utils/bytecodes/token.json"
@@ -134,7 +134,7 @@ export const useParticipateToCampaign = () => {
 
   const participate = useCallback(async (campaign: Campaign, receiverAddress: string, amount: string) => {
     try {
-      /*const [proofParams] = await getZkPassportProof({
+      const [proofParams] = await getZkPassportProof({
         address: receiverAddress,
         scope: "scope",
         onGeneratingProof: () => {
@@ -153,7 +153,7 @@ export const useParticipateToCampaign = () => {
           console.log("zk passport zkPassportCurrentUrl received")
           setCurrentZkPassportUrl(zkPassportCurrentUrl)
         },
-      })*/
+      })
 
       const onChainAmount = BigNumber(amount)
         .multipliedBy(10 ** 18)

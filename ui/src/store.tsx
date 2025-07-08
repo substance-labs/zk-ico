@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Campaign } from "./types"
+import type { Asset, Campaign } from "./types"
 
 interface AppState {
   sidebarOpen: boolean
@@ -7,6 +7,8 @@ interface AppState {
   closeSidebar: () => void
   campaigns: Campaign[]
   setCampaigns: (campaigns: Campaign[]) => void
+  assets: Record<string, Asset>
+  updateAsset: (assets: Record<string, Asset>) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -15,4 +17,6 @@ export const useAppStore = create<AppState>((set) => ({
   closeSidebar: () => set({ sidebarOpen: false }),
   campaigns: [],
   setCampaigns: (campaigns) => set({ campaigns }),
+  assets: {},
+  updateAsset: (newAssets) => set((state) => ({ assets: { ...state.assets, ...newAssets } })),
 }))

@@ -12,6 +12,7 @@ import { createPXEService, getPXEServiceConfig } from "@aztec/pxe/client/lazy"
 import { createStore } from "@aztec/kv-store/indexeddb"
 import { deriveSigningKey } from "@aztec/stdlib/keys"
 import { getSchnorrAccount, SchnorrAccountContractArtifact } from "@aztec/accounts/schnorr"
+import { Mutex } from "async-mutex"
 
 import { AztecGateway7683ContractArtifact } from "./artifacts/AztecGateway7683/AztecGateway7683"
 import settings from "../settings"
@@ -21,8 +22,12 @@ export interface RegisterContractParams {
   artifact: any
 }
 
+let waitForInitPxeResolve: () => void
+const waitForInitPxe = new Promise<void>((resolve) => {
+  waitForInitPxeResolve = resolve
+})
+
 export const registerAztecContracts = async () => {
-  console.log("registering aztec contracts ...")
   const wallet = await getAztecWallet()
   const pxe = await getPxe()
   await Promise.all([
@@ -58,8 +63,9 @@ export const initPxe = async () => {
     ...getPXEServiceConfig(),
     l1Contracts: await node.getL1ContractAddresses(),
     proverEnabled: true,
+    dataDirectory: "pxe",
   }
-  const store = await createStore("filler-pxe", {
+  const store = await createStore("pxe", {
     dataDirectory: "store",
     dataStoreMapSizeKB: 1e6,
   })
@@ -68,6 +74,7 @@ export const initPxe = async () => {
     useLogSuffix: true,
   })
   await waitForPXE(pxe)
+  waitForInitPxeResolve()
 }
 
 export const getPxe = (): PXE => {
@@ -76,9 +83,11 @@ export const getPxe = (): PXE => {
 
 let accountRegistered = false
 let wallet = null
+let mutex = new Mutex()
 export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
   if (wallet) return wallet
 
+  await waitForInitPxe
   const pxe = getPxe()
 
   // TODO: integrate wallet
@@ -100,13 +109,20 @@ export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
   const account = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
   wallet = await account.getWallet()
 
-  if (!accountRegistered) {
-    await pxe.registerAccount(secretKey, (await account.getCompleteAddress()).partialAddress)
-    await pxe.registerContract({
-      instance: account.getInstance(),
-      artifact: SchnorrAccountContractArtifact,
-    })
-    accountRegistered = true
+  const release = await mutex.acquire()
+  try {
+    if (!accountRegistered) {
+      await pxe.registerAccount(secretKey, (await account.getCompleteAddress()).partialAddress)
+      await pxe.registerContract({
+        instance: account.getInstance(),
+        artifact: SchnorrAccountContractArtifact,
+      })
+      accountRegistered = true
+    }
+  } catch (err) {
+    throw err
+  } finally {
+    release()
   }
 
   return wallet

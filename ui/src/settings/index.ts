@@ -6,4 +6,6 @@ export default {
     aztecBuyToken: "0x2b695bbb09a1ccb47869436782c6812b20697af1dd4829900dabbfa99394a8cd",
     baseSepoliaBuyToken: "0x1BDD24840e119DC2602dCC587Dd182812427A5Cc",
   },
+  aztecBuyTokenDecimals: 18,
+  aztecBuyTokenSymbol: "ETH",
 }

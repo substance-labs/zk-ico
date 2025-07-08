@@ -28,3 +28,13 @@ export interface CreateCampaign {
   description: string
   rate: string
 }
+
+export interface Asset {
+  address: string
+  decimals: number
+  symbol: string
+  balance: string | number | bigint
+  offchainBalance: string
+  formattedBalance: string
+  formattedBalanceWithSymbol: string
+}
