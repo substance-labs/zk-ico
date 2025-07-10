@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { Campaign } from "../../../types"
+import { isAddress } from "viem"
+
+import { useAsset } from "../../../hooks/use-assets"
+import settings from "../../../settings"
+
 import Button from "../../base/Button"
 import Input from "../../base/Input"
 import Label from "../../base/Label"
-import Modal, { type ModalProps } from "../Modal"
-import { isAddress } from "viem"
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
-import { AztecAddress } from "@aztec/aztec.js"
-import { getAztecWallet } from "../../../utils/aztec"
-import { useAsset } from "../../../hooks/use-assets"
+import Modal from "../Modal"
+
+import type { Campaign } from "../../../types"
+import type { ModalProps } from "../Modal"
 
 interface GetIcoParticipationDataModalProps extends ModalProps {
   campaign: Campaign
@@ -23,6 +25,12 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
 }) => {
   const [address, setAddress] = useState<string>("")
   const [amount, setAmount] = useState<string>("")
+
+  const { data: asset } = useAsset({
+    address: settings.addresses.aztecBuyToken as `0x${string}`,
+    decimals: settings.aztecBuyTokenDecimals,
+    symbol: settings.aztecBuyTokenSymbol,
+  })
 
   useEffect(() => {
     if (!visible) {
@@ -61,9 +69,12 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
         )}
 
         <div>
-          <Label htmlFor="amount" className="text-sm mb-1 block">
-            Amount (ETH on Aztec)
-          </Label>
+          <div className="flex justify-between">
+            <Label htmlFor="amount" className="text-sm mb-1 block">
+              Amount (ETH on Aztec)
+            </Label>
+            {asset && <Label className="text-sm mb-1 block">Available: {asset.formattedBalanceWithSymbol}</Label>}
+          </div>
           <Input
             id="amount"
             placeholder="e.g. 0.003"
@@ -76,7 +87,11 @@ const GetIcoParticipationDataModal: React.FC<GetIcoParticipationDataModalProps> 
       </div>
 
       <div className="mt-6">
-        <Button disabled={!isValidAddress || amount.length === 0} className="w-full py-2 px-8" onClick={onConfirm}>
+        <Button
+          disabled={!isValidAddress || amount.length === 0 || !asset || asset?.balance === 0n}
+          className="w-full py-2 px-8"
+          onClick={onConfirm}
+        >
           Confirm
         </Button>
       </div>
