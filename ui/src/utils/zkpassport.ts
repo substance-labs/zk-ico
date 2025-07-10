@@ -3,23 +3,25 @@ import { ZKPassport } from "@zkpassport/sdk"
 import type { SolidityVerifierParameters } from "@zkpassport/sdk"
 
 export type GetZkPassportProofParams = {
+  address: string
+  domain: string
   onGeneratingProof?: () => void
-  onRequestReceived?: () => void
   onProofGenerated?: (proof: unknown) => void
+  onRequestReceived?: () => void
   onUrl: (url: string) => void
   scope: string
-  address: string
 }
 
 export const getZkPassportProof = async ({
+  address,
+  domain,
   onGeneratingProof: _onGeneratingProof,
-  onRequestReceived: _onRequestReceived,
   onProofGenerated: _onProofGenerated,
+  onRequestReceived: _onRequestReceived,
   onUrl,
   scope,
-  address,
 }: GetZkPassportProofParams): Promise<[SolidityVerifierParameters, unknown]> => {
-  const zkPassport = new ZKPassport()
+  const zkPassport = new ZKPassport(domain)
 
   const queryBuilder = await zkPassport.request({
     name: "Zk ICO",
