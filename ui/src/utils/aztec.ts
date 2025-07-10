@@ -3,22 +3,25 @@ import {
   AztecAddress,
   createAztecNodeClient,
   Fr,
+  getContractInstanceFromDeployParams,
   waitForPXE,
   type AztecNode,
   type PXE,
+  type ContractInstanceWithAddress,
+  SponsoredFeePaymentMethod,
 } from "@aztec/aztec.js"
-import { TokenContractArtifact } from "@aztec/noir-contracts.js/Token"
+import { TokenContract, TokenContractArtifact } from "@aztec/noir-contracts.js/Token"
 import { createPXEService, getPXEServiceConfig } from "@aztec/pxe/client/lazy"
 import { createStore } from "@aztec/kv-store/indexeddb"
 import { deriveSigningKey } from "@aztec/stdlib/keys"
 import { getSchnorrAccount, SchnorrAccountContractArtifact } from "@aztec/accounts/schnorr"
 import { Mutex } from "async-mutex"
+import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC"
 
 import { AztecGateway7683ContractArtifact } from "./artifacts/AztecGateway7683/AztecGateway7683"
 import settings from "../settings"
 
 export interface RegisterContractParams {
-  wallet: AccountWalletWithSecretKey
   artifact: any
 }
 
@@ -28,25 +31,29 @@ const waitForInitPxe = new Promise<void>((resolve) => {
 })
 
 export const registerAztecContracts = async () => {
-  const wallet = await getAztecWallet()
-  const pxe = await getPxe()
+  const pxe = getPxe()
+
   await Promise.all([
     registerContract(AztecAddress.fromString(settings.addresses.aztecBuyToken), {
-      wallet,
       artifact: TokenContractArtifact,
     }),
     registerContract(AztecAddress.fromString(settings.addresses.aztecGateway), {
-      wallet,
       artifact: AztecGateway7683ContractArtifact,
     }),
-    pxe.registerSender(AztecAddress.fromString(settings.addresses.aztecGateway)),
+    pxe.registerContract({
+      instance: await getSponsoredFPCInstance(),
+      artifact: SponsoredFPCContract.artifact,
+    }),
+    pxe.registerSender(AztecAddress.fromString("0x1046de5c4b2076a3e510a800efac69915e01e9ed671fb968fb10b672ffb725e7")), // FIXME
   ])
 }
 
-export const registerContract = async (address: AztecAddress, { wallet, artifact }: RegisterContractParams) => {
+export const registerContract = async (address: AztecAddress, { artifact }: RegisterContractParams) => {
   const node = await getAztecNode()
+  const pxe = await getPxe()
+
   const contractInstance = await node.getContract(address)
-  await wallet.registerContract({
+  await pxe.registerContract({
     instance: contractInstance!,
     artifact,
   })
@@ -63,7 +70,6 @@ export const initPxe = async () => {
     ...getPXEServiceConfig(),
     l1Contracts: await node.getL1ContractAddresses(),
     proverEnabled: true,
-    dataDirectory: "pxe",
   }
   const store = await createStore("pxe", {
     dataDirectory: "store",
@@ -82,7 +88,7 @@ export const getPxe = (): PXE => {
 }
 
 let accountRegistered = false
-let wallet = null
+let wallet: AccountWalletWithSecretKey = null
 let mutex = new Mutex()
 export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
   if (wallet) return wallet
@@ -167,3 +173,26 @@ export const parseFilledLog = (log: any): ParsedFilledLog => {
     originData,
   }
 }
+
+const SPONSORED_FPC_SALT = new Fr(0)
+
+export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
+  return await getContractInstanceFromDeployParams(SponsoredFPCContract.artifact, {
+    salt: SPONSORED_FPC_SALT,
+  })
+}
+
+export async function getSponsoredFPCAddress() {
+  return (await getSponsoredFPCInstance()).address
+}
+
+export async function getDeployedSponsoredFPCAddress(pxe: PXE) {
+  const fpc = await getSponsoredFPCAddress()
+  const contracts = await pxe.getContracts()
+  if (!contracts.find((c) => c.equals(fpc))) {
+    throw new Error("SponsoredFPC not deployed.")
+  }
+  return fpc
+}
+
+export const getPaymentMethod = async () => new SponsoredFeePaymentMethod(await getSponsoredFPCAddress())

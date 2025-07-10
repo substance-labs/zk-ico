@@ -20,9 +20,9 @@ import { useAppStore } from "../store"
 import zkIcoAbi from "../utils/abi/zkIco.json"
 import zkIcoContractBytecode from "../utils/bytecodes/zkico.json"
 import zkIcoTokenBytecode from "../utils/bytecodes/token.json"
-import { getZkPassportProof } from "../utils/zkpassport.js"
+// import { getZkPassportProof } from "../utils/zkpassport.js"
 import settings from "../settings/index.js"
-import { getAztecWallet } from "../utils/aztec.js"
+import { getAztecWallet, getPaymentMethod } from "../utils/aztec.js"
 import { AztecGateway7683Contract } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
 import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
 
@@ -134,9 +134,10 @@ export const useParticipateToCampaign = () => {
 
   const participate = useCallback(async (campaign: Campaign, receiverAddress: string, amount: string) => {
     try {
-      const [proofParams] = await getZkPassportProof({
+      /*const [proofParams] = await getZkPassportProof({
         address: receiverAddress,
-        scope: "scope",
+        scope: "hello",
+        domain: "hello"
         onGeneratingProof: () => {
           setIsGeneratingZkPassportProof(true)
           console.log("generating proof ...")
@@ -153,7 +154,7 @@ export const useParticipateToCampaign = () => {
           console.log("zk passport zkPassportCurrentUrl received")
           setCurrentZkPassportUrl(zkPassportCurrentUrl)
         },
-      })
+      })*/
 
       const onChainAmount = BigNumber(amount)
         .multipliedBy(10 ** 18)
@@ -164,18 +165,6 @@ export const useParticipateToCampaign = () => {
         TokenContract.at(AztecAddress.fromString(campaign.aztecBuyToken.address), aztecWallet),
         AztecGateway7683Contract.at(gatewayAddress, aztecWallet),
       ])
-
-      const fillDeadline = 2 ** 32 - 1
-      const nonce = Fr.random()
-      const witness = await aztecWallet.createAuthWit({
-        caller: gatewayAddress,
-        action: token.methods.transfer_to_public(
-          aztecWallet.getAddress(),
-          gatewayAddress,
-          BigInt(onChainAmount),
-          nonce,
-        ),
-      })
 
       // TODO: use valid proof
       const depositCommitment = keccak256(
@@ -212,6 +201,8 @@ export const useParticipateToCampaign = () => {
         ),
       )
 
+      const fillDeadline = 2 ** 32 - 1
+      const nonce = Fr.random()
       const orderData = encodePacked(
         [
           "bytes32",
@@ -245,6 +236,15 @@ export const useParticipateToCampaign = () => {
         ],
       )
 
+      const witness = await aztecWallet.createAuthWit({
+        caller: gatewayAddress,
+        action: token.methods.transfer_to_public(
+          aztecWallet.getAddress(),
+          gatewayAddress,
+          BigInt(onChainAmount),
+          nonce,
+        ),
+      })
       const receipt = await aztecGateway.methods
         .open_private({
           fill_deadline: fillDeadline,
@@ -254,7 +254,11 @@ export const useParticipateToCampaign = () => {
         .with({
           authWitnesses: [witness],
         })
-        .send()
+        .send({
+          fee: {
+            paymentMethod: await getPaymentMethod(),
+          },
+        })
         .wait()
 
       const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))

@@ -34,7 +34,7 @@ const App = () => {
       try {
         initiated.current = true
         await initPxe()
-        // await registerAztecContracts()
+        await registerAztecContracts()
         startPolling()
       } catch (err) {
         console.error(err)
