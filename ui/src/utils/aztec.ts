@@ -93,30 +93,34 @@ let mutex = new Mutex()
 export const getAztecWallet = async (): Promise<AccountWalletWithSecretKey> => {
   if (wallet) return wallet
 
-  await waitForInitPxe
-  const pxe = getPxe()
-
-  // TODO: integrate wallet
-  let secretKeyStr = localStorage.getItem("AZTEC_SECRET_KEY")
-  if (!secretKeyStr) {
-    secretKeyStr = Fr.random().toString()
-    localStorage.setItem("AZTEC_SECRET_KEY", secretKeyStr as string)
-  }
-  const secretKey = Fr.fromHexString(secretKeyStr)
-
-  let saltStr = localStorage.getItem("AZTEC_SALT")
-  if (!saltStr) {
-    saltStr = Fr.random().toString()
-    localStorage.setItem("AZTEC_SALT", saltStr as string)
-  }
-  const salt = Fr.fromHexString(secretKeyStr)
-
-  const signingKey = deriveSigningKey(secretKey)
-  const account = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
-  wallet = await account.getWallet()
-
   const release = await mutex.acquire()
+
   try {
+    await waitForInitPxe
+    const pxe = getPxe()
+
+    // TODO: integrate wallet
+    const getFrValueByKey = (key: string): Fr => {
+      let str = localStorage.getItem(key)
+      if (!str) {
+        str = Fr.random().toString()
+        localStorage.setItem(key, str as string)
+      }
+      return Fr.fromHexString(str)
+    }
+
+    const secretKey = getFrValueByKey("AZTEC_SECRET_KEY")
+    const salt = getFrValueByKey("AZTEC_SALT")
+
+    const signingKey = deriveSigningKey(secretKey)
+    const account = await getSchnorrAccount(pxe, secretKey, signingKey, salt)
+    if (!Boolean(localStorage.getItem("DEPLOYED"))) {
+      await account.deploy({ fee: { paymentMethod: await getPaymentMethod() } }).wait()
+      localStorage.setItem("DEPLOYED", "true")
+    }
+
+    wallet = await account.getWallet()
+
     if (!accountRegistered) {
       await pxe.registerAccount(secretKey, (await account.getCompleteAddress()).partialAddress)
       await pxe.registerContract({
@@ -139,6 +143,30 @@ export type ParsedFilledLog = {
   fillerData: `0x${string}`
   originData: `0x${string}`
 }
+
+const SPONSORED_FPC_SALT = new Fr(0)
+
+export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
+  return await getContractInstanceFromDeployParams(SponsoredFPCContract.artifact, {
+    salt: SPONSORED_FPC_SALT,
+  })
+}
+
+export async function getSponsoredFPCAddress() {
+  return (await getSponsoredFPCInstance()).address
+}
+
+export async function getDeployedSponsoredFPCAddress(pxe: PXE) {
+  const fpc = await getSponsoredFPCAddress()
+  const contracts = await pxe.getContracts()
+  if (!contracts.find((c) => c.equals(fpc))) {
+    throw new Error("SponsoredFPC not deployed.")
+  }
+  return fpc
+}
+
+export const getPaymentMethod = async () => new SponsoredFeePaymentMethod(await getSponsoredFPCAddress())
+
 export const parseFilledLog = (log: any): ParsedFilledLog => {
   let orderId = log[0].toString()
   let fillerData = log[11].toString()
@@ -173,26 +201,3 @@ export const parseFilledLog = (log: any): ParsedFilledLog => {
     originData,
   }
 }
-
-const SPONSORED_FPC_SALT = new Fr(0)
-
-export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
-  return await getContractInstanceFromDeployParams(SponsoredFPCContract.artifact, {
-    salt: SPONSORED_FPC_SALT,
-  })
-}
-
-export async function getSponsoredFPCAddress() {
-  return (await getSponsoredFPCInstance()).address
-}
-
-export async function getDeployedSponsoredFPCAddress(pxe: PXE) {
-  const fpc = await getSponsoredFPCAddress()
-  const contracts = await pxe.getContracts()
-  if (!contracts.find((c) => c.equals(fpc))) {
-    throw new Error("SponsoredFPC not deployed.")
-  }
-  return fpc
-}
-
-export const getPaymentMethod = async () => new SponsoredFeePaymentMethod(await getSponsoredFPCAddress())
