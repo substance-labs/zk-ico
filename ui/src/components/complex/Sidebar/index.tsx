@@ -1,20 +1,20 @@
 import { BarChart3, X } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
-import { useEffect, useState } from "react"
 
 import { useAsset } from "../../../hooks/use-assets"
 import settings from "../../../settings"
 import { useAppStore } from "../../../store"
 import { copyToClipboard } from "../../../utils/clipboard"
-import azguard from "../../../utils/azguard"
+import useWallet from "../../../hooks/use-wallet"
 
 import SecondaryButton from "../../base/SecondaryButton"
 import Spinner from "../../base/Spinner"
+import Button from "../../base/Button"
 
 const Sidebar = () => {
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const closeSidebar = useAppStore((state) => state.closeSidebar)
-  const [aztecAddress, setAztecAddress] = useState<string | null>(null)
+  const { account, formattedAccount, isConnected, connect } = useWallet()
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -23,18 +23,6 @@ const Sidebar = () => {
     decimals: settings.aztecBuyTokenDecimals,
     symbol: settings.aztecBuyTokenSymbol,
   })
-
-  useEffect(() => {
-    const fetchAztecAddress = async () => {
-      try {
-        setAztecAddress(azguard.accounts[0].split(":").at(-1))
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    fetchAztecAddress()
-  }, [])
 
   return (
     <>
@@ -98,20 +86,24 @@ const Sidebar = () => {
           </nav>
 
           <div className="mt-auto pt-4 border-t border-gray-200">
-            <button
-              className="flex items-center justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-              onClick={() => copyToClipboard(aztecAddress)}
-              disabled={!aztecAddress}
-            >
-              <span className="font-mono text-xs text-gray-700">
-                {aztecAddress ? `${aztecAddress.slice(0, 6)}…${aztecAddress.slice(-6)}` : "—"}
-              </span>
-              {asset ? (
-                <span className="text-gray-700">{asset.formattedBalanceWithSymbol}</span>
-              ) : (
-                <Spinner color="gray-700" />
-              )}
-            </button>
+            {!isConnected ? (
+              <Button className="py-2 w-full" onClick={connect}>
+                Connect wallet
+              </Button>
+            ) : (
+              <button
+                className="flex items-center justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                onClick={() => copyToClipboard(account)}
+                disabled={!account}
+              >
+                <span className="font-mono text-xs text-gray-700">{formattedAccount}</span>
+                {asset ? (
+                  <span className="text-gray-700">{asset.formattedBalanceWithSymbol}</span>
+                ) : (
+                  <Spinner color="gray-700" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </aside>

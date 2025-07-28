@@ -1,9 +1,9 @@
-import { useCallback, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import BigNumber from "bignumber.js"
 
 import { useAppStore } from "../store"
 import { formatAssetAmount } from "../utils/amount"
-import azguard from "../utils/azguard"
+import useWallet from "./use-wallet"
 
 import type { SimulateViewsResult } from "@azguardwallet/types"
 
@@ -16,24 +16,27 @@ interface UseAssetOptions {
 const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
   const { assets, updateAsset } = useAppStore()
   const timeout = useRef(null)
+  const { client, isConnected } = useWallet()
 
   const fetch = useCallback(async () => {
     try {
-      const response = await azguard.execute([
+      if (!isConnected) return
+
+      const response = await client.execute([
         {
           kind: "register_token",
           address: address,
-          account: azguard.accounts[0],
+          account: client.accounts[0],
         },
         {
           kind: "simulate_views",
-          account: azguard.accounts[0],
+          account: client.accounts[0],
           calls: [
             {
               kind: "call",
               contract: address,
               method: "balance_of_private",
-              args: [azguard.accounts[0].split(":").at(-1)],
+              args: [client.accounts[0].split(":").at(-1)],
             },
           ],
         },
@@ -69,7 +72,7 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
     } catch (err) {
       console.error(err)
     }
-  }, [address])
+  }, [address, isConnected, client])
 
   const startPolling = useCallback(() => {
     if (timeout.current) return
@@ -78,6 +81,10 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
       fetch()
     }, 30000)
   }, [address, fetch])
+
+  useEffect(() => {
+    if (isConnected) startPolling()
+  }, [isConnected, startPolling])
 
   return {
     data: assets[address.toLowerCase()],

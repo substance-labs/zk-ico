@@ -24,9 +24,9 @@ import zkIcoTokenBytecode from "../utils/bytecodes/token.json"
 import settings from "../settings/index.js"
 import { AztecGateway7683ContractArtifact } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
 import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
+import useWallet from "./use-wallet.js"
 
 import type { Campaign, CreateCampaign } from "../types.js"
-import azguard from "../utils/azguard.js"
 
 const TOPIC = "0x60b9b0a19932bdb414abc97a985884150d3e16dae4b1e007681f0c0949bcde98"
 
@@ -131,10 +131,12 @@ export const useCampaigns = (options?: UseCampaignsOptions) => {
 export const useParticipateToCampaign = () => {
   const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
   const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
+  const { client } = useWallet()
 
-  const participate = useCallback(async (campaign: Campaign, receiverAddress: string, amount: string) => {
-    try {
-      /*const [proofParams] = await getZkPassportProof({
+  const participate = useCallback(
+    async (campaign: Campaign, receiverAddress: string, amount: string) => {
+      try {
+        /*const [proofParams] = await getZkPassportProof({
         address: receiverAddress,
         scope: "hello",
         domain: "hello"
@@ -156,147 +158,149 @@ export const useParticipateToCampaign = () => {
         },
       })*/
 
-      const onChainAmount = BigNumber(amount)
-        .multipliedBy(10 ** 18)
-        .toFixed()
+        const onChainAmount = BigNumber(amount)
+          .multipliedBy(10 ** 18)
+          .toFixed()
 
-      // TODO: use valid proof
-      const depositCommitment = keccak256(
-        encodeAbiParameters(
-          [
-            {
-              type: "tuple",
-              components: [
-                { name: "vkeyHash", type: "bytes32" },
-                { name: "proof", type: "bytes" },
-                { name: "publicInputs", type: "bytes32[]" },
-                { name: "committedInputs", type: "bytes" },
-                { name: "committedInputCounts", type: "uint256[]" },
-                { name: "validityPeriodInDays", type: "uint256" },
-                { name: "domain", type: "string" },
-                { name: "scope", type: "string" },
-                { name: "devMode", type: "bool" },
-              ],
-            },
-          ],
-          [
-            {
-              vkeyHash: padHex("0x0"),
-              proof: padHex("0x0"),
-              publicInputs: [padHex("0x0")],
-              committedInputs: padHex("0x0"),
-              committedInputCounts: [0n],
-              validityPeriodInDays: 0n,
-              domain: "hello",
-              scope: "hello",
-              devMode: false,
-            },
-          ],
-        ),
-      )
-
-      const fillDeadline = 2 ** 32 - 1
-      const nonce = Fr.random()
-      const orderData = encodePacked(
-        [
-          "bytes32",
-          "bytes32",
-          "bytes32",
-          "bytes32",
-          "uint256",
-          "uint256",
-          "uint256",
-          "uint32",
-          "uint32",
-          "bytes32",
-          "uint32",
-          "uint8",
-          "bytes32",
-        ],
-        [
-          PRIVATE_SENDER,
-          padHex(campaign.zkIcoAddress as `0x${string}`),
-          campaign.aztecBuyToken.address as `0x${string}`,
-          padHex(campaign.buyToken.address as `0x${string}`),
-          BigInt(onChainAmount),
-          BigInt(onChainAmount),
-          nonce.toBigInt(),
-          AZTEC_7683_CHAIN_ID,
-          baseSepolia.id,
-          padHex(settings.addresses.aztecGateway as `0x${string}`),
-          fillDeadline,
-          PRIVATE_ORDER_WITH_HOOK,
-          depositCommitment,
-        ],
-      )
-
-      if (campaign.aztecBuyToken.address !== settings.addresses.aztecBuyToken)
-        throw new Error("Invalid aztec buy token")
-
-      const response = await azguard.execute([
-        {
-          kind: "register_contract",
-          chain: `aztec:11155111`,
-          address: settings.addresses.aztecGateway,
-          artifact: AztecGateway7683ContractArtifact,
-        },
-        {
-          kind: "register_contract",
-          chain: `aztec:11155111`,
-          address: settings.addresses.aztecBuyToken,
-          artifact: TokenContractArtifact,
-        },
-        {
-          kind: "send_transaction",
-          account: azguard.accounts[0],
-          actions: [
-            {
-              kind: "add_private_authwit",
-              content: {
-                kind: "call",
-                caller: settings.addresses.aztecGateway,
-                contract: campaign.aztecBuyToken.address,
-                method: "transfer_to_public",
-                args: [
-                  azguard.accounts[0].split(":").at(-1),
-                  settings.addresses.aztecGateway,
-                  BigInt(onChainAmount),
-                  nonce,
+        // TODO: use valid proof
+        const depositCommitment = keccak256(
+          encodeAbiParameters(
+            [
+              {
+                type: "tuple",
+                components: [
+                  { name: "vkeyHash", type: "bytes32" },
+                  { name: "proof", type: "bytes" },
+                  { name: "publicInputs", type: "bytes32[]" },
+                  { name: "committedInputs", type: "bytes" },
+                  { name: "committedInputCounts", type: "uint256[]" },
+                  { name: "validityPeriodInDays", type: "uint256" },
+                  { name: "domain", type: "string" },
+                  { name: "scope", type: "string" },
+                  { name: "devMode", type: "bool" },
                 ],
               },
-            },
-            {
-              kind: "call",
-              contract: settings.addresses.aztecGateway,
-              method: "open_private",
-              args: [
-                {
-                  fill_deadline: fillDeadline,
-                  order_data: Array.from(hexToBytes(orderData)),
-                  order_data_type: Array.from(hexToBytes(ORDER_DATA_TYPE)),
-                },
-              ],
-            },
+            ],
+            [
+              {
+                vkeyHash: padHex("0x0"),
+                proof: padHex("0x0"),
+                publicInputs: [padHex("0x0")],
+                committedInputs: padHex("0x0"),
+                committedInputCounts: [0n],
+                validityPeriodInDays: 0n,
+                domain: "hello",
+                scope: "hello",
+                devMode: false,
+              },
+            ],
+          ),
+        )
+
+        const fillDeadline = 2 ** 32 - 1
+        const nonce = Fr.random()
+        const orderData = encodePacked(
+          [
+            "bytes32",
+            "bytes32",
+            "bytes32",
+            "bytes32",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint32",
+            "uint32",
+            "bytes32",
+            "uint32",
+            "uint8",
+            "bytes32",
           ],
-        },
-      ])
+          [
+            PRIVATE_SENDER,
+            padHex(campaign.zkIcoAddress as `0x${string}`),
+            campaign.aztecBuyToken.address as `0x${string}`,
+            padHex(campaign.buyToken.address as `0x${string}`),
+            BigInt(onChainAmount),
+            BigInt(onChainAmount),
+            nonce.toBigInt(),
+            AZTEC_7683_CHAIN_ID,
+            baseSepolia.id,
+            padHex(settings.addresses.aztecGateway as `0x${string}`),
+            fillDeadline,
+            PRIVATE_ORDER_WITH_HOOK,
+            depositCommitment,
+          ],
+        )
 
-      console.log(response)
+        if (campaign.aztecBuyToken.address !== settings.addresses.aztecBuyToken)
+          throw new Error("Invalid aztec buy token")
 
-      response.forEach((res) => {
-        if (res.status === "failed") {
-          throw new Error(res.error)
-        }
-      })
+        const response = await client.execute([
+          {
+            kind: "register_contract",
+            chain: `aztec:11155111`,
+            address: settings.addresses.aztecGateway,
+            artifact: AztecGateway7683ContractArtifact,
+          },
+          {
+            kind: "register_contract",
+            chain: `aztec:11155111`,
+            address: settings.addresses.aztecBuyToken,
+            artifact: TokenContractArtifact,
+          },
+          {
+            kind: "send_transaction",
+            account: client.accounts[0],
+            actions: [
+              {
+                kind: "add_private_authwit",
+                content: {
+                  kind: "call",
+                  caller: settings.addresses.aztecGateway,
+                  contract: campaign.aztecBuyToken.address,
+                  method: "transfer_to_public",
+                  args: [
+                    client.accounts[0].split(":").at(-1),
+                    settings.addresses.aztecGateway,
+                    BigInt(onChainAmount),
+                    nonce,
+                  ],
+                },
+              },
+              {
+                kind: "call",
+                contract: settings.addresses.aztecGateway,
+                method: "open_private",
+                args: [
+                  {
+                    fill_deadline: fillDeadline,
+                    order_data: Array.from(hexToBytes(orderData)),
+                    order_data_type: Array.from(hexToBytes(ORDER_DATA_TYPE)),
+                  },
+                ],
+              },
+            ],
+          },
+        ])
 
-      /*const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))
+        console.log(response)
+
+        response.forEach((res) => {
+          if (res.status === "failed") {
+            throw new Error(res.error)
+          }
+        })
+
+        /*const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))
       console.log(`order ${orderId} sent: ${receipt.txHash.toString()}`)*/
 
-      // TODO: finalize
-    } catch (err) {
-      console.error(err)
-    }
-  }, [])
+        // TODO: finalize
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [client],
+  )
 
   return {
     fetch,

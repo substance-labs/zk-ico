@@ -1,9 +1,7 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router"
 import { ToastContainer } from "react-toastify"
-import { useEffect, useRef } from "react"
 
-import { useAsset } from "./hooks/use-assets"
-import settings from "./settings"
+import { WalletProvider } from "./contexts/WalletContext"
 
 import Campaigns from "./components/pages/Campaigns"
 // import Home from "./components/pages/Home"
@@ -20,34 +18,11 @@ const router = createBrowserRouter([
 ])
 
 const App = () => {
-  const initiated = useRef(false)
-
-  const { startPolling } = useAsset({
-    address: settings.addresses.aztecBuyToken as `0x${string}`,
-    decimals: settings.aztecBuyTokenDecimals,
-    symbol: settings.aztecBuyTokenSymbol,
-  })
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        initiated.current = true
-        startPolling()
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    if (!initiated.current) {
-      init()
-    }
-  }, [])
-
   return (
-    <>
+    <WalletProvider>
       <RouterProvider router={router} />
       <ToastContainer />
-    </>
+    </WalletProvider>
   )
 }
 
