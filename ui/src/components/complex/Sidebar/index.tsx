@@ -2,11 +2,11 @@ import { BarChart3, X } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
 import { useEffect, useState } from "react"
 
-import { getAztecWallet } from "../../../utils/aztec"
 import { useAsset } from "../../../hooks/use-assets"
 import settings from "../../../settings"
 import { useAppStore } from "../../../store"
 import { copyToClipboard } from "../../../utils/clipboard"
+import azguard from "../../../utils/azguard"
 
 import SecondaryButton from "../../base/SecondaryButton"
 import Spinner from "../../base/Spinner"
@@ -27,8 +27,7 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchAztecAddress = async () => {
       try {
-        const wallet = await getAztecWallet()
-        setAztecAddress(wallet.getAddress().toString())
+        setAztecAddress(azguard.accounts[0].split(":").at(-1))
       } catch (err) {
         console.error(err)
       }

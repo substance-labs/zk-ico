@@ -12,9 +12,9 @@ import { baseSepolia } from "viem/chains"
 import { useCallback, useEffect, useState } from "react"
 import axios from "axios"
 import BigNumber from "bignumber.js"
-import { AztecAddress, Fr } from "@aztec/aztec.js"
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { Fr } from "@aztec/aztec.js"
 import { poseidon2HashBytes } from "@aztec/foundation/crypto"
+import { TokenContractArtifact } from "@aztec/noir-contracts.js/Token"
 
 import { useAppStore } from "../store"
 import zkIcoAbi from "../utils/abi/zkIco.json"
@@ -22,11 +22,11 @@ import zkIcoContractBytecode from "../utils/bytecodes/zkico.json"
 import zkIcoTokenBytecode from "../utils/bytecodes/token.json"
 // import { getZkPassportProof } from "../utils/zkpassport.js"
 import settings from "../settings/index.js"
-import { getAztecWallet, getPaymentMethod } from "../utils/aztec.js"
-import { AztecGateway7683Contract } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
+import { AztecGateway7683ContractArtifact } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
 import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
 
 import type { Campaign, CreateCampaign } from "../types.js"
+import azguard from "../utils/azguard.js"
 
 const TOPIC = "0x60b9b0a19932bdb414abc97a985884150d3e16dae4b1e007681f0c0949bcde98"
 
@@ -159,12 +159,6 @@ export const useParticipateToCampaign = () => {
       const onChainAmount = BigNumber(amount)
         .multipliedBy(10 ** 18)
         .toFixed()
-      const gatewayAddress = AztecAddress.fromString(settings.addresses.aztecGateway)
-      const aztecWallet = await getAztecWallet()
-      const [token, aztecGateway] = await Promise.all([
-        TokenContract.at(AztecAddress.fromString(campaign.aztecBuyToken.address), aztecWallet),
-        AztecGateway7683Contract.at(gatewayAddress, aztecWallet),
-      ])
 
       // TODO: use valid proof
       const depositCommitment = keccak256(
@@ -236,33 +230,67 @@ export const useParticipateToCampaign = () => {
         ],
       )
 
-      const witness = await aztecWallet.createAuthWit({
-        caller: gatewayAddress,
-        action: token.methods.transfer_to_public(
-          aztecWallet.getAddress(),
-          gatewayAddress,
-          BigInt(onChainAmount),
-          nonce,
-        ),
-      })
-      const receipt = await aztecGateway.methods
-        .open_private({
-          fill_deadline: fillDeadline,
-          order_data: Array.from(hexToBytes(orderData)),
-          order_data_type: Array.from(hexToBytes(ORDER_DATA_TYPE)),
-        })
-        .with({
-          authWitnesses: [witness],
-        })
-        .send({
-          fee: {
-            paymentMethod: await getPaymentMethod(),
-          },
-        })
-        .wait()
+      if (campaign.aztecBuyToken.address !== settings.addresses.aztecBuyToken)
+        throw new Error("Invalid aztec buy token")
 
-      const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))
-      console.log(`order ${orderId} sent: ${receipt.txHash.toString()}`)
+      const response = await azguard.execute([
+        {
+          kind: "register_contract",
+          chain: `aztec:11155111`,
+          address: settings.addresses.aztecGateway,
+          artifact: AztecGateway7683ContractArtifact,
+        },
+        {
+          kind: "register_contract",
+          chain: `aztec:11155111`,
+          address: settings.addresses.aztecBuyToken,
+          artifact: TokenContractArtifact,
+        },
+        {
+          kind: "send_transaction",
+          account: azguard.accounts[0],
+          actions: [
+            {
+              kind: "add_private_authwit",
+              content: {
+                kind: "call",
+                caller: settings.addresses.aztecGateway,
+                contract: campaign.aztecBuyToken.address,
+                method: "transfer_to_public",
+                args: [
+                  azguard.accounts[0].split(":").at(-1),
+                  settings.addresses.aztecGateway,
+                  BigInt(onChainAmount),
+                  nonce,
+                ],
+              },
+            },
+            {
+              kind: "call",
+              contract: settings.addresses.aztecGateway,
+              method: "open_private",
+              args: [
+                {
+                  fill_deadline: fillDeadline,
+                  order_data: Array.from(hexToBytes(orderData)),
+                  order_data_type: Array.from(hexToBytes(ORDER_DATA_TYPE)),
+                },
+              ],
+            },
+          ],
+        },
+      ])
+
+      console.log(response)
+
+      response.forEach((res) => {
+        if (res.status === "failed") {
+          throw new Error(res.error)
+        }
+      })
+
+      /*const orderId = poseidon2HashBytes(Buffer.from(orderData.slice(2), "hex"))
+      console.log(`order ${orderId} sent: ${receipt.txHash.toString()}`)*/
 
       // TODO: finalize
     } catch (err) {

@@ -63,7 +63,7 @@ export class AztecGateway7683Contract extends ContractBase {
     wallet: Wallet,
     l2Gateway: EthAddressLike,
     l2GatewayDomain: bigint | number,
-    portal: EthAddressLike,
+    forwarder: EthAddressLike,
   ) {
     return new DeployMethod<AztecGateway7683Contract>(
       PublicKeys.default(),
@@ -82,7 +82,7 @@ export class AztecGateway7683Contract extends ContractBase {
     wallet: Wallet,
     l2Gateway: EthAddressLike,
     l2GatewayDomain: bigint | number,
-    portal: EthAddressLike,
+    forwarder: EthAddressLike,
   ) {
     return new DeployMethod<AztecGateway7683Contract>(
       publicKeys,
@@ -184,11 +184,11 @@ export class AztecGateway7683Contract extends ContractBase {
     ) => ContractFunctionInteraction) &
       Pick<ContractMethod, "selector">
 
-    /** constructor(l2Gateway: struct, l2GatewayDomain: integer, portal: struct) */
+    /** constructor(l2Gateway: struct, l2GatewayDomain: integer, forwarder: struct) */
     constructor: ((
       l2Gateway: EthAddressLike,
       l2GatewayDomain: bigint | number,
-      portal: EthAddressLike,
+      forwarder: EthAddressLike,
     ) => ContractFunctionInteraction) &
       Pick<ContractMethod, "selector">
 
@@ -229,6 +229,18 @@ export class AztecGateway7683Contract extends ContractBase {
       order_data_type: (bigint | number)[]
       order_data: (bigint | number)[]
     }) => ContractFunctionInteraction) &
+      Pick<ContractMethod, "selector">
+
+    /** process_message(message_ciphertext: struct, message_context: struct) */
+    process_message: ((
+      message_ciphertext: FieldLike[],
+      message_context: {
+        tx_hash: FieldLike
+        unique_note_hashes_in_tx: FieldLike[]
+        first_nullifier_in_tx: FieldLike
+        recipient: AztecAddressLike
+      },
+    ) => ContractFunctionInteraction) &
       Pick<ContractMethod, "selector">
 
     /** public_dispatch(selector: field) */

@@ -1,11 +1,11 @@
 import { useCallback, useRef } from "react"
-import { AztecAddress, Contract } from "@aztec/aztec.js"
-import { TokenContractArtifact } from "@aztec/noir-contracts.js/Token"
 import BigNumber from "bignumber.js"
 
-import { getAztecWallet } from "../utils/aztec"
 import { useAppStore } from "../store"
 import { formatAssetAmount } from "../utils/amount"
+import azguard from "../utils/azguard"
+
+import type { SimulateViewsResult } from "@azguardwallet/types"
 
 interface UseAssetOptions {
   address: `0x${string}`
@@ -19,9 +19,34 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
 
   const fetch = useCallback(async () => {
     try {
-      const aztecWallet = await getAztecWallet()
-      const token = await Contract.at(AztecAddress.fromString(address), TokenContractArtifact, aztecWallet)
-      const balance: bigint = await token.methods.balance_of_private(aztecWallet.getAddress()).simulate()
+      const response = await azguard.execute([
+        {
+          kind: "register_token",
+          address: address,
+          account: azguard.accounts[0],
+        },
+        {
+          kind: "simulate_views",
+          account: azguard.accounts[0],
+          calls: [
+            {
+              kind: "call",
+              contract: address,
+              method: "balance_of_private",
+              args: [azguard.accounts[0].split(":").at(-1)],
+            },
+          ],
+        },
+      ])
+
+      response.forEach((res) => {
+        if (res.status === "failed") {
+          throw new Error(res.error)
+        }
+      })
+
+      const encoded = ((response.at(1) as any).result as SimulateViewsResult).encoded[0][0]
+      const balance = BigInt(encoded)
       const offchainBalance = BigNumber(balance).dividedBy(10 ** decimals)
 
       updateAsset({
@@ -49,7 +74,7 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
   const startPolling = useCallback(() => {
     if (timeout.current) return
     fetch()
-    timeout.current = setTimeout(() => {
+    timeout.current = setInterval(() => {
       fetch()
     }, 30000)
   }, [address, fetch])

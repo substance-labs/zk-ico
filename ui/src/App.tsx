@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router"
 import { ToastContainer } from "react-toastify"
 import { useEffect, useRef } from "react"
 
-import { initPxe, registerAztecContracts } from "./utils/aztec"
 import { useAsset } from "./hooks/use-assets"
 import settings from "./settings"
 
@@ -33,8 +32,6 @@ const App = () => {
     const init = async () => {
       try {
         initiated.current = true
-        await initPxe()
-        await registerAztecContracts()
         startPolling()
       } catch (err) {
         console.error(err)
