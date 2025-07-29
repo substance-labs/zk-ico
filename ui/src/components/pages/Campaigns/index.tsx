@@ -116,7 +116,7 @@ const Campaigns = () => {
             </SecondaryButton>
           ) : (
             <SecondaryButton Icon={User} iconPosition={"right"} onClick={() => setProfileModalVisible(true)}>
-              {asset.formattedBalanceWithSymbol}
+              {asset ? asset.formattedBalanceWithSymbol : "-"}
             </SecondaryButton>
           )}
         </div>
