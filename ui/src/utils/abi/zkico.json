@@ -212,8 +212,55 @@
     "inputs": [
       {
         "name": "proofParams",
-        "type": "bytes",
-        "internalType": "bytes"
+        "type": "tuple",
+        "internalType": "struct ProofVerificationParams",
+        "components": [
+          {
+            "name": "vkeyHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "proof",
+            "type": "bytes",
+            "internalType": "bytes"
+          },
+          {
+            "name": "publicInputs",
+            "type": "bytes32[]",
+            "internalType": "bytes32[]"
+          },
+          {
+            "name": "committedInputs",
+            "type": "bytes",
+            "internalType": "bytes"
+          },
+          {
+            "name": "committedInputCounts",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          },
+          {
+            "name": "validityPeriodInDays",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "domain",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "scope",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "devMode",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
       },
       {
         "name": "owner",
@@ -393,7 +440,7 @@
   },
   {
     "type": "event",
-    "name": "NewZkIcoCampaignTest1",
+    "name": "NewZkIcoCampaignTest2",
     "inputs": [
       {
         "name": "zkIco",

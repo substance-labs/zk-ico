@@ -20,6 +20,7 @@ export default function Button({ children, disabled = false, className = "", ...
         transition ease-in-out duration-150
         disabled:opacity-50 disabled:cursor-not-allowed
         cursor-pointer
+        h-10
       `}
     >
       {children}

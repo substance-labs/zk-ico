@@ -9,15 +9,22 @@ import SecondaryButton from "../../base/SecondaryButton"
 import Button from "../../base/Button"
 import ZkPassportModal from "../../modals/ZkPassportModal"
 import GetIcoParticipationDataModal from "../../modals/GetIcoParticipationDataModal"
+import Spinner from "../../base/Spinner"
 
 import type { Campaign } from "../../../types"
+import useWallet from "../../../hooks/use-wallet"
+import { toast } from "react-toastify"
 
 export const CampaignCard = ({
   campaign: { title, description, icoToken, buyToken, rate },
   onParticipate,
+  isParticipating,
+  disabled,
 }: {
   campaign: Campaign
   onParticipate: () => void
+  isParticipating: boolean
+  disabled: boolean
 }) => {
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 max-w-md">
@@ -40,8 +47,8 @@ export const CampaignCard = ({
       </div>
 
       <div className="mt-6">
-        <Button className="w-full py-2 px-4" onClick={onParticipate}>
-          Participate
+        <Button className="w-full px-4" onClick={onParticipate} disabled={disabled || isParticipating}>
+          {isParticipating ? <Spinner /> : "Participate"}
         </Button>
       </div>
     </div>
@@ -52,8 +59,14 @@ const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const { campaigns } = useCampaigns()
-  const { participate, zkPassportCurrentUrl, resetZkPassportProof, isGeneratingZkPassportProof } =
-    useParticipateToCampaign()
+  const {
+    participate,
+    zkPassportCurrentUrl,
+    resetZkPassportProof,
+    isGeneratingZkPassportProof,
+    isParticipatingInCampaignId,
+  } = useParticipateToCampaign()
+  const { isConnected } = useWallet()
 
   const onGetAddress = useCallback((campaign: Campaign) => {
     setSelectedCampaign(campaign)
@@ -63,7 +76,9 @@ const Campaigns = () => {
     (receiverAddress: string, amount: string) => {
       setTimeout(() => {
         try {
-          participate(selectedCampaign, receiverAddress, amount)
+          participate(selectedCampaign, receiverAddress, amount).then(() => {
+            toast.success(`You succesfully participated to the ${selectedCampaign.title} campaign!`)
+          })
         } catch (err) {
           console.error(err)
         }
@@ -85,7 +100,13 @@ const Campaigns = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
           {campaigns.map((campaign, idx) => (
-            <CampaignCard key={idx} campaign={campaign} onParticipate={() => onGetAddress(campaign)} />
+            <CampaignCard
+              key={idx}
+              campaign={campaign}
+              onParticipate={() => onGetAddress(campaign)}
+              isParticipating={isParticipatingInCampaignId === campaign.id}
+              disabled={!isConnected}
+            />
           ))}
         </section>
       </div>

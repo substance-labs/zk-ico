@@ -64,7 +64,7 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
             forceDecimals: true,
           }),
           formattedBalanceWithSymbol: formatAssetAmount(offchainBalance, symbol, {
-            decimals: 6,
+            decimals: 5,
             forceDecimals: true,
           }),
         },

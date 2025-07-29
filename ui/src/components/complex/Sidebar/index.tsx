@@ -1,5 +1,7 @@
 import { BarChart3, X } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
+import { useAppKit } from "@reown/appkit/react"
+import { useAccount } from "wagmi"
 
 import { useAsset } from "../../../hooks/use-assets"
 import settings from "../../../settings"
@@ -14,7 +16,9 @@ import Button from "../../base/Button"
 const Sidebar = () => {
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const closeSidebar = useAppStore((state) => state.closeSidebar)
-  const { account, formattedAccount, isConnected, connect } = useWallet()
+  const { account, formattedAccount, isConnected: isAztecWalletConnected, connect } = useWallet()
+  const { open } = useAppKit()
+  const { address: evmAddress, isConnected: isEvmWalletConnected } = useAccount()
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -86,15 +90,29 @@ const Sidebar = () => {
           </nav>
 
           <div className="mt-auto pt-4 border-t border-gray-200">
-            {!isConnected ? (
-              <Button className="py-2 w-full" onClick={connect}>
-                Connect wallet
+            {!isEvmWalletConnected ? (
+              <Button className="w-full mb-2" onClick={() => open()}>
+                Connect EVM wallet
+              </Button>
+            ) : (
+              <button
+                className="flex items-center mb-2 justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                onClick={() => copyToClipboard(evmAddress)}
+                disabled={!isEvmWalletConnected}
+              >
+                <span className="font-mono text-xs text-gray-700">{`${evmAddress.slice(0, 6)}...${evmAddress.slice(-4)}`}</span>
+              </button>
+            )}
+
+            {!isAztecWalletConnected ? (
+              <Button className="w-full" onClick={connect}>
+                Connect Aztec wallet
               </Button>
             ) : (
               <button
                 className="flex items-center justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                 onClick={() => copyToClipboard(account)}
-                disabled={!account}
+                disabled={!isAztecWalletConnected}
               >
                 <span className="font-mono text-xs text-gray-700">{formattedAccount}</span>
                 {asset ? (

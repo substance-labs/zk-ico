@@ -6,6 +6,7 @@ export interface Token {
 }
 
 export interface Campaign {
+  id: number
   zkIcoAddress: string
   title: string
   description: string

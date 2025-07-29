@@ -34,12 +34,12 @@ export const getZkPassportProof = async ({
 
   const { url, onRequestReceived, onGeneratingProof, onProofGenerated, onResult, onReject } = queryBuilder.done()
 
-  //queryBuilder.in("nationality", "North Korea")
+  queryBuilder.out("nationality", ["North Korea"])
   queryBuilder.gte("age", 18)
-  queryBuilder.done()
   queryBuilder.bind("user_address", address)
-  onUrl(url)
+  queryBuilder.done()
 
+  if (onUrl) onUrl(url)
   if (_onRequestReceived) onRequestReceived(_onRequestReceived)
   if (_onGeneratingProof) onGeneratingProof(_onGeneratingProof)
 
