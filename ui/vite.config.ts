@@ -41,7 +41,6 @@ export default defineConfig(({ mode }) => {
     define: {
       "process.env": JSON.stringify({
         API_URL: env.API_URL,
-        BASE_RPC_URL: env.BASE_RPC_URL,
         ETHERSCAN_API_KEY: env.ETHERSCAN_API_KEY,
         NODE_DEBUG: env.NODE_DEBUG,
         REOWN_PROJECT_ID: env.REOWN_PROJECT_ID,
