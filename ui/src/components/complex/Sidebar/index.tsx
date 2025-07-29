@@ -72,6 +72,11 @@ const Sidebar = () => {
               )
             })}
           </nav>
+
+          {/* Footer */}
+          <div className="mt-auto pt-4 border-t border-gray-200 flex justify-center">
+            <span className="text-gray-600 text-sm">© Substance Labs 2025</span>
+          </div>
         </div>
       </aside>
     </>
