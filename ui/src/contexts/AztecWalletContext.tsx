@@ -12,9 +12,9 @@ type WalletContextType = {
   formattedAccount: string
 }
 
-export const WalletContext = createContext<WalletContextType | undefined>(undefined)
+export const AztecWalletContext = createContext<WalletContextType | undefined>(undefined)
 
-export const WalletProvider = ({ children }: { children: ReactNode }) => {
+export const AztecWalletProvider = ({ children }: { children: ReactNode }) => {
   const [selectedAccount, setSelectedAccount] = useState<`aztec:${number}:${string}` | null>(null)
   const [client, setClient] = useState<AzguardClient | null>(null)
 
@@ -57,10 +57,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     : ""
 
   return (
-    <WalletContext.Provider
+    <AztecWalletContext.Provider
       value={{ isConnected: !!client, client, connect, account: selectedAccount, formattedAccount }}
     >
       {children}
-    </WalletContext.Provider>
+    </AztecWalletContext.Provider>
   )
 }

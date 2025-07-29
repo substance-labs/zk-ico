@@ -5,7 +5,7 @@ import { baseSepolia, type AppKitNetwork } from "@reown/appkit/networks"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi"
 
-import { WalletProvider } from "./contexts/WalletContext"
+import { AztecWalletProvider } from "./contexts/AztecWalletContext"
 import Campaigns from "./components/pages/Campaigns"
 // import Home from "./components/pages/Home"
 
@@ -49,10 +49,10 @@ const App = () => {
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <WalletProvider>
+        <AztecWalletProvider>
           <RouterProvider router={router} />
           <ToastContainer />
-        </WalletProvider>
+        </AztecWalletProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )
