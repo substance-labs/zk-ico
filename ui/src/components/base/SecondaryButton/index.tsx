@@ -3,8 +3,9 @@ import { type LucideIcon } from "lucide-react"
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
-  Icon: LucideIcon
+  Icon?: LucideIcon
   withBackground?: boolean
+  iconPosition?: "right" | "left"
 }
 
 export default function SecondaryButton({
@@ -13,6 +14,7 @@ export default function SecondaryButton({
   className = "",
   Icon,
   withBackground = false,
+  iconPosition = "right",
   ...props
 }: ButtonProps) {
   return (
@@ -20,7 +22,7 @@ export default function SecondaryButton({
       {...props}
       disabled={disabled}
       className={`
-        group flex items-center space-x-3 py-2 pr-4
+        group flex items-center space-x-2 py-2 px-4
         rounded-xl           
         transition-colors duration-150
         cursor-pointer
@@ -28,8 +30,9 @@ export default function SecondaryButton({
         ${className}
       `}
     >
-      <Icon className="w-5 h-5 text-gray-600 ransition-colors duration-150 ml-3" />
+      {Icon && iconPosition === "left" && <Icon className="w-5 h-5 text-gray-600 transition-colors duration-150 " />}
       <span>{children}</span>
+      {Icon && iconPosition === "right" && <Icon className="w-5 h-5 text-gray-600 transition-colors duration-150 " />}
     </button>
   )
 }

@@ -1,32 +1,16 @@
 import { BarChart3, X } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
-import { useAppKit } from "@reown/appkit/react"
-import { useAccount } from "wagmi"
 
-import { useAsset } from "../../../hooks/use-assets"
-import settings from "../../../settings"
 import { useAppStore } from "../../../store"
-import { copyToClipboard } from "../../../utils/clipboard"
-import useWallet from "../../../hooks/use-wallet"
 
 import SecondaryButton from "../../base/SecondaryButton"
-import Spinner from "../../base/Spinner"
-import Button from "../../base/Button"
 
 const Sidebar = () => {
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const closeSidebar = useAppStore((state) => state.closeSidebar)
-  const { account, formattedAccount, isConnected: isAztecWalletConnected, connect } = useWallet()
-  const { open } = useAppKit()
-  const { address: evmAddress, isConnected: isEvmWalletConnected } = useAccount()
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { data: asset } = useAsset({
-    address: settings.addresses.aztecBuyToken as `0x${string}`,
-    decimals: settings.aztecBuyTokenDecimals,
-    symbol: settings.aztecBuyTokenSymbol,
-  })
 
   return (
     <>
@@ -88,41 +72,6 @@ const Sidebar = () => {
               )
             })}
           </nav>
-
-          <div className="mt-auto pt-4 border-t border-gray-200">
-            {!isEvmWalletConnected ? (
-              <Button className="w-full mb-2" onClick={() => open()}>
-                Connect EVM wallet
-              </Button>
-            ) : (
-              <button
-                className="flex items-center mb-2 justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                onClick={() => copyToClipboard(evmAddress)}
-                disabled={!isEvmWalletConnected}
-              >
-                <span className="font-mono text-xs text-gray-700">{`${evmAddress.slice(0, 6)}...${evmAddress.slice(-4)}`}</span>
-              </button>
-            )}
-
-            {!isAztecWalletConnected ? (
-              <Button className="w-full" onClick={connect}>
-                Connect Aztec wallet
-              </Button>
-            ) : (
-              <button
-                className="flex items-center justify-between bg-gray-100 p-3 hover:bg-gray-200 rounded-xl cursor-pointer w-full disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                onClick={() => copyToClipboard(account)}
-                disabled={!isAztecWalletConnected}
-              >
-                <span className="font-mono text-xs text-gray-700">{formattedAccount}</span>
-                {asset ? (
-                  <span className="text-gray-700">{asset.formattedBalanceWithSymbol}</span>
-                ) : (
-                  <Spinner color="gray-700" />
-                )}
-              </button>
-            )}
-          </div>
         </div>
       </aside>
     </>

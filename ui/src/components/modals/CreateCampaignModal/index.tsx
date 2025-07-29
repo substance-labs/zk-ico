@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "react-toastify"
 
 import { useCreateCampaign } from "../../../hooks/use-campaigns"
@@ -23,6 +23,18 @@ const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({ visible, onCl
   const [rate, setRate] = useState<string>("")
 
   const { create, isCreating } = useCreateCampaign()
+
+  useEffect(() => {
+    if (!visible) {
+      setTitle("")
+      setDescription("")
+      setIcoTokenName("")
+      setIcoTokenSymbol("")
+      setIcoTokenTotalSupply("")
+      setIcoTokenReceiver("")
+      setRate("")
+    }
+  }, [visible])
 
   const isButtonDisabled = useMemo(() => {
     return (

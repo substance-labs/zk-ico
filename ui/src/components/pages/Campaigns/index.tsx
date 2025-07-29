@@ -1,7 +1,12 @@
 import { useCallback, useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, User } from "lucide-react"
+import { toast } from "react-toastify"
+import { useAccount } from "wagmi"
 
 import { useCampaigns, useParticipateToCampaign } from "../../../hooks/use-campaigns"
+import useWallet from "../../../hooks/use-wallet"
+import { useAsset } from "../../../hooks/use-assets"
+import settings from "../../../settings"
 
 import MainLayout from "../../layouts/MainLayout"
 import CreateCampaignModal from "../../modals/CreateCampaignModal"
@@ -10,10 +15,9 @@ import Button from "../../base/Button"
 import ZkPassportModal from "../../modals/ZkPassportModal"
 import GetIcoParticipationDataModal from "../../modals/GetIcoParticipationDataModal"
 import Spinner from "../../base/Spinner"
+import ProfileModal from "../../modals/ProfileModal"
 
 import type { Campaign } from "../../../types"
-import useWallet from "../../../hooks/use-wallet"
-import { toast } from "react-toastify"
 
 export const CampaignCard = ({
   campaign: { title, description, icoToken, buyToken, rate },
@@ -57,6 +61,7 @@ export const CampaignCard = ({
 
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
+  const [profileModalVisibile, setProfileModalVisible] = useState<boolean>(false)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const { campaigns } = useCampaigns()
   const {
@@ -66,7 +71,13 @@ const Campaigns = () => {
     isGeneratingZkPassportProof,
     isParticipatingInCampaignId,
   } = useParticipateToCampaign()
-  const { isConnected } = useWallet()
+  const { isConnected: isAztecWalletConnected } = useWallet()
+  const { isConnected: isEvmWalletConnected } = useAccount()
+  const { data: asset } = useAsset({
+    address: settings.addresses.aztecBuyToken as `0x${string}`,
+    decimals: settings.aztecBuyTokenDecimals,
+    symbol: settings.aztecBuyTokenSymbol,
+  })
 
   const onGetAddress = useCallback((campaign: Campaign) => {
     setSelectedCampaign(campaign)
@@ -90,22 +101,36 @@ const Campaigns = () => {
   )
 
   return (
-    <MainLayout>
-      <div className="min-h-screen">
-        <header className="flex justify-between items-center mb-5">
-          <SecondaryButton Icon={Plus} onClick={() => setCreateCampaignModalVisible(true)}>
+    <MainLayout
+      header={
+        <div className="flex justify-between items-center ">
+          <SecondaryButton Icon={Plus} iconPosition="left" onClick={() => setCreateCampaignModalVisible(true)}>
             <span>Create campaign</span>
           </SecondaryButton>
-        </header>
-
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
+          {!isAztecWalletConnected || !isEvmWalletConnected ? (
+            <SecondaryButton onClick={() => setProfileModalVisible(true)}>
+              <div className="relative inline-block w-fit">
+                <User />
+                <span className="absolute top-0 right-0 inline-block w-2 h-2 bg-red-600 rounded-full ring-2 ring-white" />
+              </div>
+            </SecondaryButton>
+          ) : (
+            <SecondaryButton Icon={User} iconPosition={"right"} onClick={() => setProfileModalVisible(true)}>
+              {asset.formattedBalanceWithSymbol}
+            </SecondaryButton>
+          )}
+        </div>
+      }
+    >
+      <div className="min-h-screen">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ">
           {campaigns.map((campaign, idx) => (
             <CampaignCard
               key={idx}
               campaign={campaign}
               onParticipate={() => onGetAddress(campaign)}
               isParticipating={isParticipatingInCampaignId === campaign.id}
-              disabled={!isConnected}
+              disabled={!isAztecWalletConnected}
             />
           ))}
         </section>
@@ -127,6 +152,7 @@ const Campaigns = () => {
         onClose={() => setSelectedCampaign(null)}
         onData={onParticipate}
       />
+      <ProfileModal visible={profileModalVisibile} onClose={() => setProfileModalVisible(false)} />
     </MainLayout>
   )
 }
