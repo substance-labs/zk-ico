@@ -27,7 +27,7 @@ import { getZkPassportProof } from "../utils/zkpassport.js"
 import settings from "../settings/index.js"
 import { AztecGateway7683ContractArtifact } from "../utils/artifacts/AztecGateway7683/AztecGateway7683.js"
 import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_SENDER } from "../settings/constants.js"
-import useWallet from "./use-wallet.js"
+import useAztecWallet from "./use-aztec-wallet.js"
 import { sleep } from "../utils/sleep.js"
 import { OrderData } from "../utils/OrderData.js"
 
@@ -141,7 +141,7 @@ export const useParticipateToCampaign = () => {
   const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
   const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
   const [isParticipatingInCampaignId, setIsParticipatingInCampaignId] = useState<number | null>(null)
-  const { client: azguardClient } = useWallet()
+  const { client: azguardClient } = useAztecWallet()
   const { data: evmWalletClient } = useWalletClient({
     chainId: baseSepolia.id,
   })
@@ -152,7 +152,7 @@ export const useParticipateToCampaign = () => {
   const participate = useCallback(
     async (campaign: Campaign, receiverAddress: string, amount: string) => {
       try {
-        /*const [proofParams] = await getZkPassportProof({
+        const [proofParams3] = await getZkPassportProof({
           address: receiverAddress,
           scope: "hello",
           domain: window.location.origin,
@@ -172,7 +172,7 @@ export const useParticipateToCampaign = () => {
             console.log("zk passport zkPassportCurrentUrl received")
             setCurrentZkPassportUrl(zkPassportCurrentUrl)
           },
-        })*/
+        })
 
         setIsParticipatingInCampaignId(campaign.id)
 

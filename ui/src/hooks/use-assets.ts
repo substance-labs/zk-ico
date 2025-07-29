@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js"
 
 import { useAppStore } from "../store"
 import { formatAssetAmount } from "../utils/amount"
-import useWallet from "./use-wallet"
+import useAztecWallet from "./use-aztec-wallet"
 
 import type { SimulateViewsResult } from "@azguardwallet/types"
 
@@ -16,7 +16,7 @@ interface UseAssetOptions {
 const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
   const { assets, updateAsset } = useAppStore()
   const timeout = useRef(null)
-  const { client, isConnected } = useWallet()
+  const { client, isConnected } = useAztecWallet()
 
   const fetch = useCallback(async () => {
     try {

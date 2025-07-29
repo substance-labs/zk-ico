@@ -4,7 +4,7 @@ import { toast } from "react-toastify"
 import { useAccount } from "wagmi"
 
 import { useCampaigns, useParticipateToCampaign } from "../../../hooks/use-campaigns"
-import useWallet from "../../../hooks/use-wallet"
+import useAztecWallet from "../../../hooks/use-aztec-wallet"
 import { useAsset } from "../../../hooks/use-assets"
 import settings from "../../../settings"
 
@@ -71,7 +71,7 @@ const Campaigns = () => {
     isGeneratingZkPassportProof,
     isParticipatingInCampaignId,
   } = useParticipateToCampaign()
-  const { isConnected: isAztecWalletConnected } = useWallet()
+  const { isConnected: isAztecWalletConnected } = useAztecWallet()
   const { isConnected: isEvmWalletConnected } = useAccount()
   const { data: asset } = useAsset({
     address: settings.addresses.aztecBuyToken as `0x${string}`,
@@ -116,7 +116,7 @@ const Campaigns = () => {
             </SecondaryButton>
           ) : (
             <SecondaryButton Icon={User} iconPosition={"right"} onClick={() => setProfileModalVisible(true)}>
-              {asset ? asset.formattedBalanceWithSymbol : "-"}
+              {asset ? asset.formattedBalanceWithSymbol : ""}
             </SecondaryButton>
           )}
         </div>

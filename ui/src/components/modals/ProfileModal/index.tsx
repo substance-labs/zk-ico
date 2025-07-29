@@ -3,7 +3,7 @@ import { useAppKit } from "@reown/appkit/react"
 import { useAccount } from "wagmi"
 
 import { copyToClipboard } from "../../../utils/clipboard"
-import useWallet from "../../../hooks/use-wallet"
+import useAztecWallet from "../../../hooks/use-aztec-wallet"
 import { useAsset } from "../../../hooks/use-assets"
 import settings from "../../../settings"
 
@@ -21,7 +21,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ visible, onClose }) => {
     symbol: settings.aztecBuyTokenSymbol,
   })
 
-  const { account, formattedAccount, isConnected: isAztecWalletConnected, connect } = useWallet()
+  const { account, formattedAccount, isConnected: isAztecWalletConnected, connect } = useAztecWallet()
   const { open } = useAppKit()
   const { address: evmAddress, isConnected: isEvmWalletConnected } = useAccount()
 

@@ -1,12 +1,12 @@
 import { useContext } from "react"
 import { WalletContext } from "../contexts/WalletContext"
 
-const useWallet = () => {
+const useAztecWallet = () => {
   const context = useContext(WalletContext)
   if (!context) {
-    throw new Error("useWallet must be used within a WalletProvider")
+    throw new Error("useAztecWallet must be used within a WalletProvider")
   }
   return context
 }
 
-export default useWallet
+export default useAztecWallet
