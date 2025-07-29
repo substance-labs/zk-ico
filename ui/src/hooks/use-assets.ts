@@ -16,7 +16,7 @@ interface UseAssetOptions {
 const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
   const { assets, updateAsset } = useAppStore()
   const timeout = useRef(null)
-  const { client, isConnected } = useAztecWallet()
+  const { client, isConnected, account } = useAztecWallet()
 
   const fetch = useCallback(async () => {
     try {
@@ -26,17 +26,17 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
         {
           kind: "register_token",
           address: address,
-          account: client.accounts[0],
+          account,
         },
         {
           kind: "simulate_views",
-          account: client.accounts[0],
+          account,
           calls: [
             {
               kind: "call",
               contract: address,
               method: "balance_of_private",
-              args: [client.accounts[0].split(":").at(-1)],
+              args: [account.split(":").at(-1)],
             },
           ],
         },
@@ -72,7 +72,7 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
     } catch (err) {
       console.error(err)
     }
-  }, [address, isConnected, client])
+  }, [account, address, isConnected, client])
 
   const startPolling = useCallback(() => {
     if (timeout.current) return
