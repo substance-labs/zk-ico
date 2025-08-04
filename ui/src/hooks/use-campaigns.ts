@@ -152,10 +152,10 @@ export const useParticipateToCampaign = () => {
   const participate = useCallback(
     async (campaign: Campaign, receiverAddress: string, amount: string) => {
       try {
-        const [proofParams3] = await getZkPassportProof({
+        const [proofParams] = await getZkPassportProof({
           address: receiverAddress,
           scope: "hello",
-          domain: window.location.origin,
+          hostname: window.location.hostname,
           onGeneratingProof: () => {
             setIsGeneratingZkPassportProof(true)
             console.log("generating proof ...")
@@ -174,24 +174,14 @@ export const useParticipateToCampaign = () => {
           },
         })
 
+        console.log(proofParams)
+
         setIsParticipatingInCampaignId(campaign.id)
 
         const onChainAmount = BigNumber(amount)
           .multipliedBy(10 ** 18)
           .toFixed()
 
-        // TODO: use valid proof
-        const proofParams = {
-          vkeyHash: padHex("0x0"),
-          proof: padHex("0x0"),
-          publicInputs: [padHex("0x0")],
-          committedInputs: padHex("0x0"),
-          committedInputCounts: [0n],
-          validityPeriodInDays: 0n,
-          domain: window.location.origin,
-          scope: "hello15",
-          devMode: false,
-        }
         const proof = encodeAbiParameters(
           [
             {
@@ -209,7 +199,7 @@ export const useParticipateToCampaign = () => {
               ],
             },
           ],
-          [proofParams],
+          [proofParams as any],
         )
         const depositCommitment = keccak256(proof)
 
@@ -315,7 +305,7 @@ export const useParticipateToCampaign = () => {
 
         console.log(`detected order: ${resolvedOrder.orderId}`)
 
-        // NOTE: wait for the filler that fills the order
+        // NOTE: wait for the filler to fill the order
         while (true) {
           const result = await evmPublicClient.readContract({
             address: settings.addresses.l2EvmGateway as `0x${string}`,

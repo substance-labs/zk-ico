@@ -4,7 +4,7 @@ import type { SolidityVerifierParameters } from "@zkpassport/sdk"
 
 export type GetZkPassportProofParams = {
   address: string
-  domain: string
+  hostname: string
   onGeneratingProof?: () => void
   onProofGenerated?: (proof: unknown) => void
   onRequestReceived?: () => void
@@ -14,14 +14,14 @@ export type GetZkPassportProofParams = {
 
 export const getZkPassportProof = async ({
   address,
-  domain,
+  hostname,
   onGeneratingProof: _onGeneratingProof,
   onProofGenerated: _onProofGenerated,
   onRequestReceived: _onRequestReceived,
   onUrl,
   scope,
 }: GetZkPassportProofParams): Promise<[SolidityVerifierParameters, unknown]> => {
-  const zkPassport = new ZKPassport(domain)
+  const zkPassport = new ZKPassport(hostname)
 
   const queryBuilder = await zkPassport.request({
     name: "Zk ICO",
@@ -37,6 +37,7 @@ export const getZkPassportProof = async ({
   queryBuilder.out("nationality", ["North Korea"])
   queryBuilder.gte("age", 18)
   queryBuilder.bind("user_address", address)
+  queryBuilder.bind("chain", "ethereum_sepolia") // TODO: replace ethereum_sepolia with base_sepolia when available
   queryBuilder.done()
 
   if (onUrl) onUrl(url)
