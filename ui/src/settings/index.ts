@@ -8,4 +8,5 @@ export default {
   },
   aztecBuyTokenDecimals: 18,
   aztecBuyTokenSymbol: "ETH",
+  aztecTokenFaucetUrl: process.env.AZTEC_TOKEN_FAUCET_URL as string,
 }

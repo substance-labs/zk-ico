@@ -30,9 +30,10 @@ import { AZTEC_7683_CHAIN_ID, ORDER_DATA_TYPE, PRIVATE_ORDER_WITH_HOOK, PRIVATE_
 import useAztecWallet from "./use-aztec-wallet.js"
 import { sleep } from "../utils/sleep.js"
 import { OrderData } from "../utils/OrderData.js"
+import { getResolvedOrdersByLogs } from "../utils/aztec-gateway.js"
+import { getAztecAddressFromAzguardAccount } from "../utils/account.js"
 
 import type { Campaign, CreateCampaign } from "../types.js"
-import { getResolvedOrdersByLogs } from "../utils/aztec-gateway.js"
 
 const TOPIC = "0x735312ed5eab3721d405c10ad3e54796be4e4631ff7be0464e3a99daafae0ca3"
 
@@ -141,7 +142,7 @@ export const useParticipateToCampaign = () => {
   const [zkPassportCurrentUrl, setCurrentZkPassportUrl] = useState<string | null>(null)
   const [isGeneratingZkPassportProof, setIsGeneratingZkPassportProof] = useState<boolean>(false)
   const [isParticipatingInCampaignId, setIsParticipatingInCampaignId] = useState<number | null>(null)
-  const { client: azguardClient } = useAztecWallet()
+  const { client: azguardClient, account: azguardAccount } = useAztecWallet()
   const { data: evmWalletClient } = useWalletClient({
     chainId: baseSepolia.id,
   })
@@ -240,7 +241,7 @@ export const useParticipateToCampaign = () => {
           },
           {
             kind: "send_transaction",
-            account: azguardClient.accounts[0],
+            account: azguardAccount,
             actions: [
               {
                 kind: "add_private_authwit",
@@ -250,7 +251,7 @@ export const useParticipateToCampaign = () => {
                   contract: campaign.aztecBuyToken.address,
                   method: "transfer_to_public",
                   args: [
-                    azguardClient.accounts[0].split(":").at(-1),
+                    getAztecAddressFromAzguardAccount(azguardAccount),
                     settings.addresses.aztecGateway,
                     BigInt(onChainAmount),
                     nonce,
@@ -333,7 +334,7 @@ export const useParticipateToCampaign = () => {
         setIsParticipatingInCampaignId(null)
       }
     },
-    [azguardClient, evmWalletClient, evmPublicClient],
+    [azguardClient, evmWalletClient, azguardAccount, evmPublicClient],
   )
 
   return {

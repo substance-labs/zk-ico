@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js"
 import { useAppStore } from "../store"
 import { formatAssetAmount } from "../utils/amount"
 import useAztecWallet from "./use-aztec-wallet"
+import { getAztecAddressFromAzguardAccount } from "../utils/account"
 
 import type { SimulateViewsResult } from "@azguardwallet/types"
 
@@ -36,7 +37,7 @@ const useAsset = ({ address, decimals, symbol }: UseAssetOptions) => {
               kind: "call",
               contract: address,
               method: "balance_of_private",
-              args: [account.split(":").at(-1)],
+              args: [getAztecAddressFromAzguardAccount(account)],
             },
           ],
         },

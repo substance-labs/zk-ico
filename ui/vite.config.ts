@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
       "process.env": JSON.stringify({
         API_URL: env.API_URL,
         ETHERSCAN_API_KEY: env.ETHERSCAN_API_KEY,
-        NODE_DEBUG: env.NODE_DEBUG,
+        AZTEC_TOKEN_FAUCET_URL: env.AZTEC_TOKEN_FAUCET_URL,
         REOWN_PROJECT_ID: env.REOWN_PROJECT_ID,
       }),
     },
