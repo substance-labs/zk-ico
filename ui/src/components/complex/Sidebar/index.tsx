@@ -8,7 +8,7 @@ import { useAppStore } from "../../../store"
 import useAztecWallet from "../../../hooks/use-aztec-wallet"
 
 import SecondaryButton from "../../base/SecondaryButton"
-import RegisterToast from "../RegisterToast"
+import FaucetRegisterToast from "../FaucetRegisterToast"
 import { getAztecAddressFromAzguardAccount } from "../../../utils/account"
 import settings from "../../../settings"
 
@@ -66,7 +66,7 @@ const Sidebar = () => {
       const { senderAddress } = await res.json()
       console.log("senderAddress:", senderAddress)
       toast.success(
-        <RegisterToast
+        <FaucetRegisterToast
           senderAddress={senderAddress}
           sourceAssetSymbol={settings.aztecBuyTokenSymbol}
           onRegisterSender={onRegisterSender}

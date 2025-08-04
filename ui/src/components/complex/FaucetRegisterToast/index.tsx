@@ -4,7 +4,7 @@ import { formatAddress } from "../../../utils/account"
 
 import Button from "../../base/Button"
 
-const RegisterToast = ({
+const FaucetRegisterToast = ({
   senderAddress,
   sourceAssetSymbol,
   onRegisterSender,
@@ -44,4 +44,4 @@ const RegisterToast = ({
   )
 }
 
-export default RegisterToast
+export default FaucetRegisterToast
