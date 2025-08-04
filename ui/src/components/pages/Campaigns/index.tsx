@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Plus, User } from "lucide-react"
 import { toast } from "react-toastify"
 import { useAccount } from "wagmi"
@@ -16,6 +16,7 @@ import ZkPassportModal from "../../modals/ZkPassportModal"
 import GetIcoParticipationDataModal from "../../modals/GetIcoParticipationDataModal"
 import Spinner from "../../base/Spinner"
 import ProfileModal from "../../modals/ProfileModal"
+import WarningClosePageModal from "../../modals/WarningClosePageModal"
 
 import type { Campaign } from "../../../types"
 
@@ -62,6 +63,7 @@ export const CampaignCard = ({
 const Campaigns = () => {
   const [createCampaignModalVisible, setCreateCampaignModalVisible] = useState<boolean>(false)
   const [profileModalVisibile, setProfileModalVisible] = useState<boolean>(false)
+  const [warningClosePageVisibile, setWarningClosePageVisibile] = useState<boolean>(true)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const { campaigns } = useCampaigns()
   const {
@@ -78,6 +80,10 @@ const Campaigns = () => {
     decimals: settings.aztecBuyTokenDecimals,
     symbol: settings.aztecBuyTokenSymbol,
   })
+
+  const isButtonDisabled = useMemo(() => {
+    return !isAztecWalletConnected || !isEvmWalletConnected
+  }, [isAztecWalletConnected, isEvmWalletConnected])
 
   const onGetAddress = useCallback((campaign: Campaign) => {
     setSelectedCampaign(campaign)
@@ -130,7 +136,7 @@ const Campaigns = () => {
               campaign={campaign}
               onParticipate={() => onGetAddress(campaign)}
               isParticipating={isParticipatingInCampaignId === campaign.id}
-              disabled={!isAztecWalletConnected}
+              disabled={isButtonDisabled}
             />
           ))}
         </section>
@@ -153,6 +159,11 @@ const Campaigns = () => {
         onData={onParticipate}
       />
       <ProfileModal visible={profileModalVisibile} onClose={() => setProfileModalVisible(false)} />
+      <WarningClosePageModal
+        visible={warningClosePageVisibile}
+        onClose={() => setWarningClosePageVisibile(false)}
+        onUnderstand={() => setWarningClosePageVisibile(false)}
+      />
     </MainLayout>
   )
 }
