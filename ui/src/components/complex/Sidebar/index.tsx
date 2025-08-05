@@ -128,7 +128,7 @@ const Sidebar = () => {
 
             {/* Navigation */}
             <nav className="flex flex-col space-y-2 mt-6">
-              {[{ to: "/campaigns", icon: BarChart3, label: "Campaigns" }].map(({ to, icon: Icon, label }) => {
+              {[{ to: "/", icon: BarChart3, label: "Campaigns" }].map(({ to, icon: Icon, label }) => {
                 const isActive = pathname === to
                 return (
                   <SecondaryButton

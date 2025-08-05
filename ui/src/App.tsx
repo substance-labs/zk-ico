@@ -37,10 +37,6 @@ createAppKit({
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/campaigns" replace />,
-  },
-  {
-    path: "/campaigns",
     element: <Campaigns />,
   },
 ])
