@@ -1,13 +1,4 @@
-import {
-  createPublicClient,
-  encodeAbiParameters,
-  encodePacked,
-  hexToBytes,
-  http,
-  keccak256,
-  padHex,
-  zeroAddress,
-} from "viem"
+import { createPublicClient, encodeAbiParameters, hexToBytes, http, keccak256, padHex, zeroAddress } from "viem"
 import { baseSepolia } from "viem/chains"
 import { useCallback, useEffect, useState } from "react"
 import axios from "axios"
@@ -35,7 +26,7 @@ import { getAztecAddressFromAzguardAccount } from "../utils/account.js"
 
 import type { Campaign, CreateCampaign } from "../types.js"
 
-const TOPIC = "0x735312ed5eab3721d405c10ad3e54796be4e4631ff7be0464e3a99daafae0ca3"
+const TOPIC = "0x35a442bd130b461f57d26dc44a0cd8ac21c253665322e59848e33eb9cae1babc"
 
 interface UseCampaignsOptions {
   initialFetch?: boolean

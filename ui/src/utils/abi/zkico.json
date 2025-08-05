@@ -440,7 +440,7 @@
   },
   {
     "type": "event",
-    "name": "NewZkIcoCampaignTest2",
+    "name": "ZkIcoCampaignCreatedV1",
     "inputs": [
       {
         "name": "zkIco",
