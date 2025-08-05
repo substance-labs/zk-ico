@@ -2,7 +2,7 @@ import React from "react"
 import Sidebar from "../../complex/Sidebar"
 
 interface MainLayoutProps {
-  header: React.ReactNode
+  header?: React.ReactNode
   children: React.ReactNode
 }
 
@@ -12,7 +12,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ header, children }) => {
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="px-2 py-3">
-          <header className="mb-5">{header}</header>
+          {header && <header className="mb-5">{header}</header>}
           {children}
         </div>
       </main>
