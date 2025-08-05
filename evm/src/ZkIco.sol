@@ -23,7 +23,7 @@ contract ZkIco is IHook7683Recipient {
     mapping(address => uint256) public amounts;
 
     event NewOrderToFinalize(bytes32 depositCommitment, uint256 amount);
-    event NewZkIcoCampaignTest2(address zkIco);
+    event ZkIcoCampaignCreatedV1(address zkIco);
 
     constructor(
         address gateway,
@@ -44,7 +44,7 @@ contract ZkIco is IHook7683Recipient {
         TITLE = title;
         DESCRIPTION = description;
 
-        emit NewZkIcoCampaignTest2(address(this));
+        emit ZkIcoCampaignCreatedV1(address(this));
     }
 
     function finalizeOrder(ProofVerificationParams calldata proofParams, address owner) external {
