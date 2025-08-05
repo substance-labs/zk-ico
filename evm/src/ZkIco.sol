@@ -47,9 +47,7 @@ contract ZkIco is IHook7683Recipient {
         emit NewZkIcoCampaignTest2(address(this));
     }
 
-    function finalizeOrder(ProofVerificationParams calldata proofParams, address owner)
-        external
-    {
+    function finalizeOrder(ProofVerificationParams calldata proofParams, address owner) external {
         /*require(!proofParams.devMode, "invalid dev mode proof");
         bytes32 proofCommitment = keccak256(abi.encode(proofParams));
         require(!consumedProofs[proofCommitment], "proof already used");
