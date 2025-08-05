@@ -166,8 +166,6 @@ export const useParticipateToCampaign = () => {
           },
         })
 
-        console.log(proofParams)
-
         setIsParticipatingInCampaignId(campaign.id)
 
         const onChainAmount = BigNumber(amount)
