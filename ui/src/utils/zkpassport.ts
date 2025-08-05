@@ -28,7 +28,7 @@ export const getZkPassportProof = async ({
     logo: "https://zkpassport.id/logo.png",
     purpose: "You must be at least 18 years old and not coming from North Korea",
     scope,
-    devMode: true,
+    devMode: process.env.ZK_PASSPORT_DEV_MODE === "true",
     mode: "compressed-evm",
   })
 
@@ -50,7 +50,7 @@ export const getZkPassportProof = async ({
         _onProofGenerated?.(proof)
         const verifierParams = await zkPassport.getSolidityVerifierParameters({
           proof,
-          devMode: true,
+          devMode: process.env.ZK_PASSPORT_DEV_MODE === "true",
           scope,
         })
         resolve(verifierParams)

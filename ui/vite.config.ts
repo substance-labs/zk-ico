@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
         ETHERSCAN_API_KEY: env.ETHERSCAN_API_KEY,
         AZTEC_TOKEN_FAUCET_URL: env.AZTEC_TOKEN_FAUCET_URL,
         REOWN_PROJECT_ID: env.REOWN_PROJECT_ID,
+        ZK_PASSPORT_DEV_MODE: env.ZK_PASSPORT_DEV_MODE,
       }),
     },
   }
